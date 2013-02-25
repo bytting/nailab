@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/Nailab">
+        <file>Resources/rad01.ico</file>
+        <file>Resources/back.gif</file>
+        <file>Resources/archive64.png</file>
+        <file>Resources/detector64.png</file>
+        <file>Resources/jobs64.png</file>
+        <file>Resources/beaker16.png</file>
+        <file>Resources/detector16.png</file>
+        <file>Resources/detectors64.png</file>
+    </qresource>
+</RCC>
