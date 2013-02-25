@@ -1,12 +1,12 @@
-nailab
+=== nailab ===
 
-=== GUI application for running NaI detectors with Genie 2000 ===
+GUI application for running NaI detectors with Genie 2000
 
-Status:
-Development
+Status: Development
 
-Audience:
-Currently only for local laboratory at NRPA
+Audience: Currently only for local laboratory at NRPA
 
 Requirements:
-This application requires proprietary libraries from CANBERRA
+- Windows C API
+- QT 5.0.1
+- Proprietary libraries from CANBERRA
