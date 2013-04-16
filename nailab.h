@@ -56,6 +56,7 @@ private:
     void updateDetectorViews();
 
     void disableListWidgetItem(QListWidgetItem *item);
+    const Detector* getDetectorByName(const QString& name);
 
 private slots:
 

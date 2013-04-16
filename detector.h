@@ -6,7 +6,9 @@
 struct Detector
 {
     QString name;
-    bool enabled;    
+    bool enabled;
+    bool inUse;
+    int maxChannels;
     int searchRegion;
     double significanceTreshold;
     double tolerance;
@@ -24,6 +26,13 @@ struct Detector
     double maxFWHMsForRightLimit;
     QString backgroundSubtract;
     QString efficiencyCalibrationType;
+    QString presetType;
+    double areaPreset;
+    int integralPreset;
+    int countPreset;
+    int realTime;
+    int liveTime;
+    int spectrumCounter;
 };
 
 #endif // DETECTOR_H

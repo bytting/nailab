@@ -6,6 +6,16 @@ CreateDetector::CreateDetector(QWidget *parent) :
     ui(new Ui::CreateDetector)
 {
     ui->setupUi(this);
+
+    QStringList items;
+    items << "" << tr("LINEAR") << tr("STEP");
+    ui->cboxContinuumFunction->addItems(items);
+    items.clear();
+    items << "" << tr("LINEAR") << tr("DUAL") << tr("EMP") << tr("INTERP");
+    ui->cboxEfficiencyCalibrationType->addItems(items);
+    items.clear();
+    items << "" << tr("NONE") << tr("AREA") << tr("INTEGRAL") << tr("COUNT") << tr("REALTIME") << tr("LIVETIME");
+    ui->cboxPresetType->addItems(items);
 }
 
 CreateDetector::~CreateDetector()
@@ -111,4 +121,34 @@ QString CreateDetector::backgroundSubtract() const
 QString CreateDetector::efficiencyCalibrationType() const
 {
     return ui->cboxEfficiencyCalibrationType->currentText();
+}
+
+QString CreateDetector::presetType() const
+{
+    return ui->cboxPresetType->currentText();
+}
+
+double CreateDetector::areaPreset() const
+{
+    return ui->tbAreaPreset->text().toDouble();
+}
+
+int CreateDetector::integralPreset() const
+{
+    return ui->tbIntegralPreset->text().toInt();
+}
+
+int CreateDetector::countPreset() const
+{
+    return ui->tbCountPreset->text().toInt();
+}
+
+int CreateDetector::realTime() const
+{
+    return ui->tbRealtime->text().toInt();
+}
+
+int CreateDetector::liveTime() const
+{
+    return ui->tbLivetime->text().toInt();
 }

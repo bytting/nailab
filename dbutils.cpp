@@ -1,5 +1,6 @@
 #include "dbutils.h"
 #include <QFile>
+#include <QTextStream>
 #include <QtXml>
 #include <QMessageBox>
 #include "settings.h"
@@ -33,17 +34,7 @@ bool readSettingsXml(QFile &file, Settings& settings)
     {
         QDomElement xnode = xnodes.at(i).toElement();
         if(xnode.tagName() == "GenieFolder")
-            settings.genieFolder = xnode.text();
-        else if(xnode.tagName() == "AreaPreset")
-            settings.areaPreset = xnode.text().toDouble();
-        else if(xnode.tagName() == "IntegralPreset")
-            settings.integralPreset = xnode.text().toInt();
-        else if(xnode.tagName() == "CountPreset")
-            settings.countPreset = xnode.text().toInt();
-        else if(xnode.tagName() == "RealTime")
-            settings.realTime = xnode.text().toInt();
-        else if(xnode.tagName() == "LiveTime")
-            settings.liveTime = xnode.text().toInt();
+            settings.genieFolder = xnode.text();        
         else if(xnode.tagName() == "NIDLibrary")
             settings.NIDLibrary = xnode.text();
         else if(xnode.tagName() == "NIDConfidenceTreshold")
@@ -63,7 +54,6 @@ bool readSettingsXml(QFile &file, Settings& settings)
         else if(xnode.tagName() == "ErrorMultiplier")
             settings.errorMultiplier = xnode.text().toDouble();
     }
-
     return true;
 }
 
@@ -75,27 +65,7 @@ bool writeSettingsXml(QFile &file, const Settings& settings)
 
     QDomElement xnode = document.createElement("GenieFolder");
     xnode.appendChild(document.createTextNode(settings.genieFolder));
-    xroot.appendChild(xnode);
-
-    xnode = document.createElement("AreaPreset");
-    xnode.appendChild(document.createTextNode(QString::number(settings.areaPreset)));
-    xroot.appendChild(xnode);
-
-    xnode = document.createElement("IntegralPreset");
-    xnode.appendChild(document.createTextNode(QString::number(settings.integralPreset)));
-    xroot.appendChild(xnode);
-
-    xnode = document.createElement("CountPreset");
-    xnode.appendChild(document.createTextNode(QString::number(settings.countPreset)));
-    xroot.appendChild(xnode);
-
-    xnode = document.createElement("RealTime");
-    xnode.appendChild(document.createTextNode(QString::number(settings.realTime)));
-    xroot.appendChild(xnode);
-
-    xnode = document.createElement("LiveTime");
-    xnode.appendChild(document.createTextNode(QString::number(settings.liveTime)));
-    xroot.appendChild(xnode);
+    xroot.appendChild(xnode);    
 
     xnode = document.createElement("NIDLibrary");
     xnode.appendChild(document.createTextNode(settings.NIDLibrary));
@@ -227,6 +197,7 @@ bool readDetectorXml(QFile& file, QList<Detector>& detectors)
 
         detector.name = xdetector.attribute("Name");
         detector.enabled = xdetector.attribute("Enabled") == "true" ? true : false;
+        detector.inUse = xdetector.attribute("InUse") == "true" ? true : false;
         detector.searchRegion = xdetector.attribute("SearchRegion").toInt();
         detector.significanceTreshold = xdetector.attribute("SignificanceTreshold").toDouble();
         detector.tolerance = xdetector.attribute("Tolerance").toDouble();
@@ -244,6 +215,12 @@ bool readDetectorXml(QFile& file, QList<Detector>& detectors)
         detector.maxFWHMsForRightLimit = xdetector.attribute("MaxFWHMsForRightLimit").toDouble();
         detector.backgroundSubtract = xdetector.attribute("BackgroundSubtract");
         detector.efficiencyCalibrationType = xdetector.attribute("EfficiencyCalibrationType");
+        detector.presetType = xdetector.attribute("PresetType");
+        detector.areaPreset = xdetector.attribute("AreaPreset").toDouble();
+        detector.integralPreset = xdetector.attribute("IntegralPreset").toInt();
+        detector.countPreset = xdetector.attribute("CountPreset").toInt();
+        detector.realTime = xdetector.attribute("RealTime").toInt();
+        detector.liveTime = xdetector.attribute("LiveTime").toInt();
         detectors.push_back(detector);
     }
     return true;
@@ -260,6 +237,7 @@ bool writeDetectorXml(QFile& file, const QList<Detector>& detectors)
 
         xdetector.setAttribute("Name", detectors[i].name);
         xdetector.setAttribute("Enabled", detectors[i].enabled ? "true" : "false");
+        xdetector.setAttribute("InUse", detectors[i].inUse ? "true" : "false");
         xdetector.setAttribute("SearchRegion", detectors[i].searchRegion);
         xdetector.setAttribute("SignificanceTreshold", detectors[i].significanceTreshold);
         xdetector.setAttribute("Tolerance", detectors[i].tolerance);
@@ -277,6 +255,12 @@ bool writeDetectorXml(QFile& file, const QList<Detector>& detectors)
         xdetector.setAttribute("MaxFWHMsForRightLimit", detectors[i].maxFWHMsForRightLimit);
         xdetector.setAttribute("BackgroundSubtract", detectors[i].backgroundSubtract);
         xdetector.setAttribute("EfficiencyCalibrationType", detectors[i].efficiencyCalibrationType);
+        xdetector.setAttribute("PresetType", detectors[i].presetType);
+        xdetector.setAttribute("AreaPreset", detectors[i].areaPreset);
+        xdetector.setAttribute("IntegralPreset", detectors[i].integralPreset);
+        xdetector.setAttribute("CountPreset", detectors[i].countPreset);
+        xdetector.setAttribute("RealTime", detectors[i].realTime);
+        xdetector.setAttribute("LiveTime", detectors[i].liveTime);
         xroot.appendChild(xdetector);
     }
 

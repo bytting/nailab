@@ -1,0 +1,2 @@
+Hver detektor skal ha Sample input parametere (none, live real, integral area count)
+Detektor skal ha spekter referanse i XML

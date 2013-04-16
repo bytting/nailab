@@ -5,12 +5,7 @@
 
 struct Settings
 {
-    QString genieFolder;
-    double areaPreset;
-    int integralPreset;
-    int countPreset;
-    int realTime;
-    int liveTime;
+    QString genieFolder;    
     QString NIDLibrary;
     double NIDConfidenceTreshold;
     double NIDConfidenceFactor;
