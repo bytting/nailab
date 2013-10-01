@@ -14,8 +14,11 @@ CreateDetector::CreateDetector(QWidget *parent) :
     items << "" << tr("LINEAR") << tr("DUAL") << tr("EMP") << tr("INTERP");
     ui->cboxEfficiencyCalibrationType->addItems(items);
     items.clear();
-    items << "" << tr("NONE") << tr("AREA") << tr("INTEGRAL") << tr("COUNT") << tr("REALTIME") << tr("LIVETIME");
-    ui->cboxPresetType->addItems(items);
+    items << "" << tr("NONE") << tr("AREA") << tr("INTEGRAL") << tr("COUNT");
+    ui->cboxPresetType1->addItems(items);
+    items.clear();
+    items << "" << tr("NONE") << tr("REALTIME") << tr("LIVETIME");
+    ui->cboxPresetType2->addItems(items);
 }
 
 CreateDetector::~CreateDetector()
@@ -123,32 +126,27 @@ QString CreateDetector::efficiencyCalibrationType() const
     return ui->cboxEfficiencyCalibrationType->currentText();
 }
 
-QString CreateDetector::presetType() const
+QString CreateDetector::presetType1() const
 {
-    return ui->cboxPresetType->currentText();
+    return ui->cboxPresetType1->currentText();
 }
 
-double CreateDetector::areaPreset() const
+double CreateDetector::presetType1Value() const
 {
-    return ui->tbAreaPreset->text().toDouble();
+    return ui->tbPresetType1->text().toDouble();
 }
 
-int CreateDetector::integralPreset() const
+QString CreateDetector::presetType2() const
 {
-    return ui->tbIntegralPreset->text().toInt();
+    return ui->cboxPresetType2->currentText();
 }
 
-int CreateDetector::countPreset() const
+double CreateDetector::presetType2Value() const
 {
-    return ui->tbCountPreset->text().toInt();
+    return ui->tbPresetType2->text().toDouble();
 }
 
-int CreateDetector::realTime() const
+int CreateDetector::spectrumCounter() const
 {
-    return ui->tbRealtime->text().toInt();
-}
-
-int CreateDetector::liveTime() const
-{
-    return ui->tbLivetime->text().toInt();
+    return 0;
 }

@@ -1,6 +1,7 @@
 #ifndef DETECTOR_H
 #define DETECTOR_H
 
+#include <QMap>
 #include <QString>
 
 struct Detector
@@ -26,13 +27,12 @@ struct Detector
     double maxFWHMsForRightLimit;
     QString backgroundSubtract;
     QString efficiencyCalibrationType;
-    QString presetType;
-    double areaPreset;
-    int integralPreset;
-    int countPreset;
-    int realTime;
-    int liveTime;
+    QString presetType1;
+    QString presetType2;
+    double presetType1Value;
+    double presetType2Value;
     int spectrumCounter;
+    QMap<QString, QString> beakers;
 };
 
 #endif // DETECTOR_H

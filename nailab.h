@@ -14,10 +14,13 @@
 #include "settings.h"
 #include "createbeaker.h"
 #include "createdetector.h"
+#include "createdetectorbeaker.h"
 #include "beaker.h"
 #include "detector.h"
 
 #define NAILAB_ENVIRONMENT_VARIABLE "NAIROOT"
+
+struct SampleInput;
 
 class Nailab : public QMainWindow
 {
@@ -34,7 +37,8 @@ private:
 
     Ui::MainWindow ui;    
     CreateBeaker *dlgNewBeaker;
-    CreateDetector *dlgNewDetector;
+    CreateDetector *dlgNewDetector;    
+    createdetectorbeaker *dlgNewDetectorBeaker;
 
     QDir envRootDirectory;
     QDir envConfigurationDirectory, envArchiveDirectory, envTempDirectory, envLibraryDirectory;
@@ -45,7 +49,7 @@ private:
     QList<Beaker> beakers;
     QList<Detector> detectors;
     QList<QString> detectorNames;
-    QListWidgetItem *listItemJobs, *listItemDetectors, *listItemArchive;
+    QListWidgetItem *listItemJobs, *listItemDetectors, *listItemArchive;    
 
     bool setupEnvironment();
     void setupDialogs();
@@ -56,7 +60,13 @@ private:
     void updateDetectorViews();
 
     void disableListWidgetItem(QListWidgetItem *item);
-    const Detector* getDetectorByName(const QString& name);
+    Detector* getDetectorByName(const QString& name);
+
+    void showBeakersForDetector(Detector *detector);
+
+    bool validateSampleInput();
+    void storeSampleInput(SampleInput& sampleInput);
+    bool startJob(SampleInput& sampleInput);
 
 private slots:
 
@@ -77,6 +87,7 @@ private slots:
 
     void onNewDetector();
     void onNewDetectorAccepted();
+    void onNewDetectorBeakerAccepted();
     void onAdminDetectorsAccepted();    
 
     void onLvAdminBeakersCurrentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
@@ -88,6 +99,7 @@ private slots:
     void onBrowseGenieFolder();
 
     void onInputSampleAccepted();
+    void onAddDetectorBeaker();
 };
 
 #endif // NAILAB_H

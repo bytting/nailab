@@ -1,5 +1,5 @@
-#include "mcalib.h"
-
+#include <QString>
+#include <QByteArray>
 #include <windows.h>
 #include <citypes.h>
 #include <crackers.h>
@@ -10,9 +10,7 @@
 #include <cam_n.h>
 #include <utility.h>
 #include <sad_nest.h>
-
-#include <QString>
-#include <QByteArray>
+#include "mcalib.h"
 
 namespace mca
 {

@@ -151,9 +151,6 @@
                 <bold>false</bold>
                </font>
               </property>
-              <property name="styleSheet">
-               <string notr="true"/>
-              </property>
               <property name="currentIndex">
                <number>0</number>
               </property>
@@ -162,8 +159,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>899</width>
-                 <height>391</height>
+                 <width>400</width>
+                 <height>289</height>
                 </rect>
                </property>
                <property name="font">
@@ -435,8 +432,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>899</width>
-                 <height>391</height>
+                 <width>363</width>
+                 <height>96</height>
                 </rect>
                </property>
                <property name="styleSheet">
@@ -446,17 +443,46 @@
                 <string>Advanced parameters</string>
                </attribute>
                <layout class="QGridLayout" name="gridLayout_6">
+                <item row="3" column="1">
+                 <spacer name="verticalSpacer_4">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_46">
+                  <property name="text">
+                   <string>Value</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
                 <item row="0" column="2">
                  <widget class="QLabel" name="label_45">
                   <property name="text">
                    <string>Systematic error (%)</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                  </widget>
                 </item>
                 <item row="2" column="2">
                  <widget class="QLabel" name="label_47">
                   <property name="text">
-                   <string>Realtime</string>
+                   <string>Value</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                  </widget>
                 </item>
@@ -474,98 +500,55 @@
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="0">
-                 <widget class="QLabel" name="label_48">
-                  <property name="text">
-                   <string>Integral preset</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="0" column="0">
                  <widget class="QLabel" name="label_44">
                   <property name="text">
                    <string>Random error (%)</string>
                   </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
                  </widget>
                 </item>
                 <item row="2" column="1">
-                 <widget class="QLineEdit" name="tbInputSampleLivetime">
+                 <widget class="QLineEdit" name="tbInputSamplePresetType1">
                   <property name="maxLength">
                    <number>32</number>
                   </property>
                  </widget>
                 </item>
                 <item row="2" column="3">
-                 <widget class="QLineEdit" name="tbInputSampleRealtime">
+                 <widget class="QLineEdit" name="tbInputSamplePresetType2">
                   <property name="maxLength">
                    <number>32</number>
                   </property>
                  </widget>
-                </item>
-                <item row="2" column="0">
-                 <widget class="QLabel" name="label_46">
-                  <property name="text">
-                   <string>Livetime</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="1">
-                 <widget class="QLineEdit" name="tbInputSampleCountPreset">
-                  <property name="maxLength">
-                   <number>32</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="2">
-                 <widget class="QLabel" name="label_49">
-                  <property name="text">
-                   <string>Area preset</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="0">
-                 <widget class="QLabel" name="label_50">
-                  <property name="text">
-                   <string>Count preset</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="1">
-                 <widget class="QLineEdit" name="tbInputSampleIntegralPreset">
-                  <property name="maxLength">
-                   <number>32</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="3">
-                 <widget class="QLineEdit" name="tbInputSampleAreaPreset">
-                  <property name="maxLength">
-                   <number>32</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="5" column="1">
-                 <spacer name="verticalSpacer_4">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>40</height>
-                   </size>
-                  </property>
-                 </spacer>
                 </item>
                 <item row="1" column="0">
                  <widget class="QLabel" name="label_57">
                   <property name="text">
-                   <string>Preset type</string>
+                   <string>Preset type 1</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                  </widget>
                 </item>
                 <item row="1" column="1">
-                 <widget class="QComboBox" name="cboxInputSamplePresetType"/>
+                 <widget class="QComboBox" name="cboxInputSamplePresetType1"/>
+                </item>
+                <item row="1" column="3">
+                 <widget class="QComboBox" name="cboxInputSamplePresetType2"/>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QLabel" name="label_58">
+                  <property name="text">
+                   <string>Preset type 2</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </widget>
@@ -814,7 +797,7 @@
               </widget>
               <widget class="QTabWidget" name="tabsAdminDetectors">
                <property name="currentIndex">
-                <number>0</number>
+                <number>1</number>
                </property>
                <widget class="QWidget" name="tabAdminDetectorsPage1">
                 <attribute name="title">
@@ -1077,101 +1060,141 @@
                 <attribute name="title">
                  <string>Page 2</string>
                 </attribute>
-                <layout class="QGridLayout" name="gridLayout_10">
-                 <item row="5" column="1">
-                  <spacer name="verticalSpacer_6">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item row="4" column="0">
-                  <widget class="QLabel" name="label_21">
-                   <property name="text">
-                    <string>Count preset</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="label_19">
-                   <property name="text">
-                    <string>Integral preset</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="3">
-                  <widget class="QLineEdit" name="tbAdminDetectorRealtime"/>
-                 </item>
-                 <item row="2" column="2">
-                  <widget class="QLabel" name="label_18">
-                   <property name="text">
-                    <string>Realtime</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="3">
-                  <widget class="QLineEdit" name="tbAdminDetectorLivetime"/>
-                 </item>
-                 <item row="3" column="2">
-                  <widget class="QLabel" name="label_17">
-                   <property name="text">
-                    <string>Livetime</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                   </property>
-                  </widget>
-                 </item>
+                <layout class="QGridLayout" name="gridLayout_11">
                  <item row="0" column="0">
-                  <widget class="QLabel" name="label_14">
-                   <property name="font">
-                    <font>
-                     <weight>75</weight>
-                     <bold>true</bold>
-                    </font>
+                  <layout class="QGridLayout" name="gridLayout_10">
+                   <property name="sizeConstraint">
+                    <enum>QLayout::SetDefaultConstraint</enum>
                    </property>
-                   <property name="text">
-                    <string>Sample info</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QLineEdit" name="tbAdminDetectorAreaPreset"/>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="label_20">
-                   <property name="text">
-                    <string>Area preset</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QLineEdit" name="tbAdminDetectorIntegralPreset"/>
-                 </item>
-                 <item row="4" column="1">
-                  <widget class="QLineEdit" name="tbAdminDetectorCountPreset"/>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_19">
+                     <property name="text">
+                      <string>Preset type 1 value</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QLineEdit" name="tbAdminDetectorPresetType1Value"/>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_14">
+                     <property name="text">
+                      <string>Presets</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_17">
+                     <property name="text">
+                      <string>Preset type 1</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QComboBox" name="cboxAdminDetectorPresetType1"/>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QLabel" name="label_18">
+                     <property name="text">
+                      <string>Preset type 2</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="3">
+                    <widget class="QLineEdit" name="tbAdminDetectorPresetType2Value"/>
+                   </item>
+                   <item row="1" column="3">
+                    <widget class="QComboBox" name="cboxAdminDetectorPresetType2"/>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QLabel" name="label_20">
+                     <property name="text">
+                      <string>Preset type 2 value</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <spacer name="verticalSpacer_7">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
                  </item>
                  <item row="1" column="0">
-                  <widget class="QLabel" name="label_56">
-                   <property name="text">
-                    <string>Preset type</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QComboBox" name="cboxAdminDetectorPresetType"/>
+                  <layout class="QHBoxLayout" name="horizontalLayout">
+                   <item>
+                    <widget class="QTableWidget" name="twAdminDetectorBeaker">
+                     <property name="selectionMode">
+                      <enum>QAbstractItemView::SingleSelection</enum>
+                     </property>
+                     <property name="selectionBehavior">
+                      <enum>QAbstractItemView::SelectRows</enum>
+                     </property>
+                     <property name="columnCount">
+                      <number>2</number>
+                     </property>
+                     <attribute name="horizontalHeaderVisible">
+                      <bool>false</bool>
+                     </attribute>
+                     <attribute name="horizontalHeaderDefaultSectionSize">
+                      <number>200</number>
+                     </attribute>
+                     <attribute name="verticalHeaderVisible">
+                      <bool>false</bool>
+                     </attribute>
+                     <attribute name="verticalHeaderDefaultSectionSize">
+                      <number>20</number>
+                     </attribute>
+                     <column/>
+                     <column/>
+                    </widget>
+                   </item>
+                   <item>
+                    <layout class="QVBoxLayout" name="verticalLayout_7">
+                     <item>
+                      <widget class="QPushButton" name="btnAdminAddDetectorBeaker">
+                       <property name="text">
+                        <string>Add</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item alignment="Qt::AlignTop">
+                      <widget class="QPushButton" name="btnAdminDeleteDetectorBeaker">
+                       <property name="text">
+                        <string>Delete</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="verticalSpacer_6">
+                       <property name="orientation">
+                        <enum>Qt::Vertical</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>20</width>
+                         <height>40</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                  </layout>
                  </item>
                 </layout>
                </widget>
@@ -1750,6 +1773,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnAdminAddDetectorBeaker</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onAddDetectorBeaker()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>867</x>
+     <y>353</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>471</x>
+     <y>319</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onBack()</slot>
@@ -1776,5 +1815,6 @@
   <slot>onBrowseNIDLibrary()</slot>
   <slot>onBrowseGenieFolder()</slot>
   <slot>onInputSampleAccepted()</slot>
+  <slot>onAddDetectorBeaker()</slot>
  </slots>
 </ui>

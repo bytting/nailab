@@ -17,7 +17,8 @@ SOURCES += main.cpp\
     createdetector.cpp \
     dbutils.cpp \    
     mcalib.cpp \
-    winutils.cpp
+    winutils.cpp \
+    createdetectorbeaker.cpp
 
 HEADERS  += nailab.h \
     createbeaker.h \
@@ -27,11 +28,14 @@ HEADERS  += nailab.h \
     dbutils.h \    
     mcalib.h \
     winutils.h \
-    settings.h
+    settings.h \
+    sampleinput.h \
+    createdetectorbeaker.h
 
 FORMS    += nailab.ui \
     createbeaker.ui \
-    createdetector.ui
+    createdetector.ui \
+    createdetectorbeaker.ui
 
 RESOURCES += nailab.qrc
 

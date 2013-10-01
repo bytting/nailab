@@ -1,8 +1,8 @@
-#include "dbutils.h"
 #include <QFile>
 #include <QTextStream>
 #include <QtXml>
 #include <QMessageBox>
+#include "dbutils.h"
 #include "settings.h"
 #include "beaker.h"
 #include "detector.h"
@@ -215,12 +215,19 @@ bool readDetectorXml(QFile& file, QList<Detector>& detectors)
         detector.maxFWHMsForRightLimit = xdetector.attribute("MaxFWHMsForRightLimit").toDouble();
         detector.backgroundSubtract = xdetector.attribute("BackgroundSubtract");
         detector.efficiencyCalibrationType = xdetector.attribute("EfficiencyCalibrationType");
-        detector.presetType = xdetector.attribute("PresetType");
-        detector.areaPreset = xdetector.attribute("AreaPreset").toDouble();
-        detector.integralPreset = xdetector.attribute("IntegralPreset").toInt();
-        detector.countPreset = xdetector.attribute("CountPreset").toInt();
-        detector.realTime = xdetector.attribute("RealTime").toInt();
-        detector.liveTime = xdetector.attribute("LiveTime").toInt();
+        detector.presetType1 = xdetector.attribute("PresetType1");
+        detector.presetType1Value = xdetector.attribute("PresetType1Value").toDouble();
+        detector.presetType2 = xdetector.attribute("PresetType2");
+        detector.presetType2Value = xdetector.attribute("PresetType2Value").toDouble();
+        detector.spectrumCounter = xdetector.attribute("SpectrumCounter").toInt();
+
+        QDomNodeList xbeakers = xdetector.elementsByTagName("Beaker");
+        for(int j=0; j<xbeakers.count(); j++)
+        {
+            QDomElement xbeaker = xbeakers.at(j).toElement();
+            detector.beakers[xbeaker.attribute("BeakerName")] = xbeaker.attribute("CalFile");
+        }
+
         detectors.push_back(detector);
     }
     return true;
@@ -255,12 +262,22 @@ bool writeDetectorXml(QFile& file, const QList<Detector>& detectors)
         xdetector.setAttribute("MaxFWHMsForRightLimit", detectors[i].maxFWHMsForRightLimit);
         xdetector.setAttribute("BackgroundSubtract", detectors[i].backgroundSubtract);
         xdetector.setAttribute("EfficiencyCalibrationType", detectors[i].efficiencyCalibrationType);
-        xdetector.setAttribute("PresetType", detectors[i].presetType);
-        xdetector.setAttribute("AreaPreset", detectors[i].areaPreset);
-        xdetector.setAttribute("IntegralPreset", detectors[i].integralPreset);
-        xdetector.setAttribute("CountPreset", detectors[i].countPreset);
-        xdetector.setAttribute("RealTime", detectors[i].realTime);
-        xdetector.setAttribute("LiveTime", detectors[i].liveTime);
+        xdetector.setAttribute("PresetType1", detectors[i].presetType1);
+        xdetector.setAttribute("PresetType1Value", detectors[i].presetType1Value);
+        xdetector.setAttribute("PresetType2", detectors[i].presetType2);
+        xdetector.setAttribute("PresetType2Value", detectors[i].presetType2Value);
+        xdetector.setAttribute("SpectrumCounter", detectors[i].spectrumCounter);
+
+        QMapIterator<QString, QString> iter(detectors[i].beakers);
+        while (iter.hasNext())
+        {
+            iter.next();
+            QDomElement xbeaker = document.createElement("Beaker");
+            xbeaker.setAttribute("BeakerName", iter.key());
+            xbeaker.setAttribute("CalFile", iter.value());
+            xdetector.appendChild(xbeaker);
+        }
+
         xroot.appendChild(xdetector);
     }
 

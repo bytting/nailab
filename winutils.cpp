@@ -1,7 +1,7 @@
-#include "winutils.h"
 #include <windows.h>
 #include <QFile>
 #include <QTextStream>
+#include "winutils.h"
 
 bool readGenieDetectorConfig(QList<QString> &mcaList)
 {

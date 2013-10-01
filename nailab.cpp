@@ -1,8 +1,3 @@
-#include "nailab.h"
-#include "dbutils.h"
-#include "winutils.h"
-#include "mcalib.h"
-#include <qglobal.h>
 #include <QStringList>
 #include <QApplication>
 #include <QMessageBox>
@@ -12,6 +7,12 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QListWidgetItem>
+#include <qglobal.h>
+#include "nailab.h"
+#include "dbutils.h"
+#include "winutils.h"
+#include "mcalib.h"
+#include "sampleinput.h"
 
 Nailab::Nailab(QWidget *parent)
     : QMainWindow(parent)
@@ -105,6 +106,9 @@ void Nailab::setupDialogs()
 
     dlgNewDetector = new CreateDetector(this);
     connect(dlgNewDetector, SIGNAL(accepted()), this, SLOT(onNewDetectorAccepted()));        
+
+    dlgNewDetectorBeaker = new createdetectorbeaker(this);
+    connect(dlgNewDetectorBeaker, SIGNAL(accepted()), this, SLOT(onNewDetectorBeakerAccepted()));
 }
 
 bool Nailab::setupMCA()
@@ -173,9 +177,13 @@ void Nailab::configureWidgets()
     items << "" << tr("HEADER");
     ui.cboxAdminGeneralSectionName->addItems(items);
     items.clear();
-    items << "" << tr("NONE") << tr("AREA") << tr("INTEGRAL") << tr("COUNT") << tr("REALTIME") << tr("LIVETIME");
-    ui.cboxAdminDetectorPresetType->addItems(items);
-    ui.cboxInputSamplePresetType->addItems(items);
+    items << "" << tr("NONE") << tr("AREA") << tr("INTEGRAL") << tr("COUNT");
+    ui.cboxAdminDetectorPresetType1->addItems(items);
+    ui.cboxInputSamplePresetType1->addItems(items);
+    items.clear();
+    items << "" << tr("NONE") << tr("REALTIME") << tr("LIVETIME");
+    ui.cboxAdminDetectorPresetType2->addItems(items);
+    ui.cboxInputSamplePresetType2->addItems(items);
 
     // Default tab pages
     ui.pages->setCurrentWidget(ui.pageMenu);
@@ -270,14 +278,111 @@ void Nailab::disableListWidgetItem(QListWidgetItem *item)
     item->setFlags(item->flags() & ~(Qt::ItemIsEnabled | Qt::ItemIsSelectable));
 }
 
-const Detector* Nailab::getDetectorByName(const QString& name)
+Detector* Nailab::getDetectorByName(const QString& name)
 {
-    foreach(const Detector &d, detectors)
+    for(int i=0; i<detectors.count(); i++)
     {
-        if(d.name == name)
-            return &d;
+        if(detectors[i].name == name)
+            return &detectors[i];
     }
     return NULL;
+}
+
+bool Nailab::validateSampleInput()
+{
+    // FIXME: Not implemented
+    return true;
+}
+
+void Nailab::storeSampleInput(SampleInput& sampleInput)
+{
+    sampleInput.detector = ui.lblInputSampleDetector->text();
+    sampleInput.title = ui.tbInputSampleProject->text();
+    sampleInput.username = ui.tbInputSampleCollector->text();
+    sampleInput.description = ui.tbInputSampleDescription->text();
+    sampleInput.specterref = ui.tbInputSampleSpecterRef->text();
+    sampleInput.ID = ui.tbInputSampleSampleID->text();
+    sampleInput.type = ui.tbInputSampleSampleType->text();
+    sampleInput.quantity = ui.tbInputSampleSampleQuantity->text();
+    sampleInput.quantityError = ui.tbInputSampleQuantityUncertainty->text();
+    sampleInput.units = ui.tbInputSampleQuantityUnits->text();
+    sampleInput.geometry = ui.tbInputSampleSampleGeometry->text();
+    switch(ui.tabsInputSampleBuildupType->currentIndex())
+    {
+    case 0:
+        sampleInput.builduptype = "DEPOSIT";
+        sampleInput.startTime = ui.dtInputSampleDepositBeginDate->text();
+        sampleInput.endTime = ui.dtInputSampleDepositSampleDate->text();
+        break;
+    case 1:
+        sampleInput.builduptype = "IRRAD";
+        sampleInput.startTime = ui.dtInputSampleIrradBeginDate->text();
+        sampleInput.endTime = ui.dtInputSampleIrradSampleDate->text();
+        break;
+    case 2:
+        sampleInput.builduptype = "";
+        sampleInput.startTime = ui.dtInputSampleNoneSampleDate->text();
+        break;
+    }
+    // FIXME: Not finished
+}
+
+bool Nailab::startJob(SampleInput& sampleInput)
+{
+    // FIXME: Not finished
+    QFile jobfile(envTempDirectory.path() + "/job01.bat");
+    if(!jobfile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
+    {
+        QMessageBox::information(this, tr("Error"), tr("Unable to open job file"));
+        return false;
+    }
+    QTextStream stream(&jobfile);
+
+    // pars
+    stream << "pars /PRUSESTRLIB=" << (settings.useStoredLibrary ? "1" : "0") << " /MDACONFID=" << settings.NIDConfidenceFactor << "\n";
+
+    // nid_intf
+    stream << "nid_intf /LIBRARY=\"" << settings.NIDLibrary << "\" /CONFID=" << settings.NIDConfidenceTreshold;
+    if(settings.performMDATest)
+        stream << " /MDA_TEST";
+    if(settings.inhibitATDCorrection)
+        stream << " /NOACQDECAY";
+    stream << "\n";
+
+    // startmca
+    stream << "startmca ";
+
+    QString presetType;
+    if(ui.cboxInputSamplePresetType1->currentText() == "AREA")
+    {
+        presetType = "/AREAPRESET=";
+    }
+    else if(ui.cboxInputSamplePresetType1->currentText() == "INTEGRAL")
+    {
+        presetType = "/INTPRESET=";
+    }
+    else if(ui.cboxInputSamplePresetType1->currentText() == "COUNT")
+    {
+        presetType = "/CNTSPRESET=";
+    }
+
+    stream << presetType << ui.tbInputSamplePresetType1->text() << "," << "0" << "," << "512" << " "; // FIXME: Get channels from mcalib
+
+    if(ui.cboxInputSamplePresetType2->currentText() == "REALTIME")
+    {
+        presetType = "/REALTIME=";
+    }
+    else if(ui.cboxInputSamplePresetType2->currentText() == "LIVETIME")
+    {
+        presetType = "/LIVETIME=";
+    }
+
+    stream << presetType << ui.tbInputSamplePresetType2->text() << "\n";
+
+    jobfile.close();
+
+    // FIXME: Update spectrum counter
+    return true;
 }
 
 void Nailab::onQuit()
@@ -325,17 +430,16 @@ void Nailab::onDetectorSelect(QListWidgetItem *item)
 
         const Detector* det = getDetectorByName(item->text());
         if(!det)
-            return; // TODO: report error
+            return; // FIXME: report error
 
         ui.tbInputSampleRandomError->setText("0");
         ui.tbInputSampleSystematicError->setText("0");
-        ui.cboxInputSamplePresetType->setCurrentText(det->presetType);
-        ui.tbInputSampleIntegralPreset->setText(QString::number(det->integralPreset));
-        ui.tbInputSampleAreaPreset->setText(QString::number(det->areaPreset));
-        ui.tbInputSampleCountPreset->setText(QString::number(det->countPreset));
-        ui.tbInputSampleRealtime->setText(QString::number(det->realTime));
-        ui.tbInputSampleLivetime->setText(QString::number(det->liveTime));
-        // TODO: Fill in defaults
+        ui.cboxInputSamplePresetType1->setCurrentText(det->presetType1);
+        ui.tbInputSamplePresetType1->setText(QString::number(det->presetType1Value));
+        ui.cboxInputSamplePresetType2->setCurrentText(det->presetType2);
+        ui.tbInputSamplePresetType2->setText(QString::number(det->presetType2Value));
+
+        // FIXME: Fill in defaults
     }
 }
 
@@ -416,7 +520,7 @@ void Nailab::onNewDetector()
 
 void Nailab::onNewDetectorAccepted()
 {
-    // TODO: Validate input...
+    // FIXME: Validate input...
     Detector detector;
     detector.name = dlgNewDetector->name();
     detector.enabled = dlgNewDetector->enabled();
@@ -438,23 +542,34 @@ void Nailab::onNewDetectorAccepted()
     detector.maxFWHMsForRightLimit = dlgNewDetector->maxFWHMsForRightLimit();
     detector.backgroundSubtract = dlgNewDetector->backgroundSubtract();
     detector.efficiencyCalibrationType = dlgNewDetector->efficiencyCalibrationType();    
-    detector.presetType = dlgNewDetector->presetType();
-    detector.areaPreset = dlgNewDetector->areaPreset();
-    detector.integralPreset = dlgNewDetector->integralPreset();
-    detector.countPreset = dlgNewDetector->countPreset();
-    detector.realTime = dlgNewDetector->realTime();
-    detector.liveTime = dlgNewDetector->liveTime();
+    detector.presetType1 = dlgNewDetector->presetType1();
+    detector.presetType1Value = dlgNewDetector->presetType1Value();
+    detector.presetType2 = dlgNewDetector->presetType2();
+    detector.presetType2Value = dlgNewDetector->presetType2Value();
     detector.spectrumCounter = 0;
 
     detectors.push_back(detector);
     writeDetectorXml(envDetectorFile, detectors);
     updateDetectorViews();
 
-    // TODO: Get max channels
+    // FIXME: Get max channels
     /*int channels;
     if(mca::maxChannels(detector.name, channels) == mca::SUCCESS)
         detector.maxChannels = channels;
     else detector.maxChannels = 1024; */
+}
+
+void Nailab::onNewDetectorBeakerAccepted()
+{
+    if(ui.lvAdminDetectors->selectedItems().count() < 1)
+        return;
+
+    QString beaker = dlgNewDetectorBeaker->beaker();
+    QString calfile = dlgNewDetectorBeaker->calfile();
+    Detector* d = getDetectorByName(ui.lvAdminDetectors->selectedItems()[0]->text());
+    d->beakers[beaker] = calfile;
+    writeDetectorXml(envDetectorFile, detectors);
+    showBeakersForDetector(d);
 }
 
 void Nailab::onAdminDetectorsAccepted()
@@ -463,37 +578,31 @@ void Nailab::onAdminDetectorsAccepted()
         return;
 
     QString detectorName = ui.lvAdminDetectors->selectedItems()[0]->text();
-    for(int i=0; i<detectors.count(); i++)
-    {
-        if(detectors[i].name == detectorName)
-        {
-            detectors[i].inUse = ui.cbAdminDetectorInUse->isChecked();
-            detectors[i].searchRegion = ui.tbAdminDetectorSearchRegion->text().toInt();
-            detectors[i].significanceTreshold = ui.tbAdminDetectorSignificanceTreshold->text().toDouble();
-            detectors[i].tolerance = ui.tbAdminDetectorTolerance->text().toDouble();
-            detectors[i].peakAreaRegion = ui.tbAdminDetectorPeakAreaRegion->text().toInt();
-            detectors[i].continuum = ui.tbAdminDetectorContinuum->text().toDouble();
-            detectors[i].continuumFunction = ui.cboxAdminDetectorContinuumFunction->currentText();
-            detectors[i].criticalLevelTest = ui.cbAdminDetectorCriticalLevelTest->isChecked();
-            detectors[i].useFixedFWHM = ui.cbAdminDetectorUseFixedFWHM->isChecked();
-            detectors[i].useFixedTailParameter = ui.cbAdminDetectorUseFixedTailParameter->isChecked();
-            detectors[i].fitSinglets = ui.cbAdminDetectorFitSinglets->isChecked();
-            detectors[i].displayROIs = ui.cbAdminDetectorDisplayROIs->isChecked();
-            detectors[i].rejectZeroAreaPeaks = ui.cbAdminDetectorRejectZeroAreaPeaks->isChecked();
-            detectors[i].maxFWHMsBetweenPeaks = ui.tbAdminDetectorMaxFWHMsBetweenPeaks->text().toDouble();
-            detectors[i].maxFWHMsForLeftLimit = ui.tbAdminDetectorMaxFWHMsForLeftLimit->text().toDouble();
-            detectors[i].maxFWHMsForRightLimit = ui.tbAdminDetectorMaxFWHMsForRightLimit->text().toDouble();
-            detectors[i].backgroundSubtract = ui.tbAdminDetectorBackgroundSubtract->text();
-            detectors[i].efficiencyCalibrationType = ui.cboxAdminDetectorEfficiencyCalibrationType->currentText();
-            detectors[i].presetType = ui.cboxAdminDetectorPresetType->currentText();
-            detectors[i].areaPreset = ui.tbAdminDetectorAreaPreset->text().toDouble();
-            detectors[i].integralPreset = ui.tbAdminDetectorIntegralPreset->text().toInt();
-            detectors[i].countPreset = ui.tbAdminDetectorCountPreset->text().toInt();
-            detectors[i].realTime = ui.tbAdminDetectorRealtime->text().toInt();
-            detectors[i].liveTime = ui.tbAdminDetectorLivetime->text().toInt();
-            break;
-        }
-    }
+    Detector* detector = getDetectorByName(detectorName);
+
+    detector->inUse = ui.cbAdminDetectorInUse->isChecked();
+    detector->searchRegion = ui.tbAdminDetectorSearchRegion->text().toInt();
+    detector->significanceTreshold = ui.tbAdminDetectorSignificanceTreshold->text().toDouble();
+    detector->tolerance = ui.tbAdminDetectorTolerance->text().toDouble();
+    detector->peakAreaRegion = ui.tbAdminDetectorPeakAreaRegion->text().toInt();
+    detector->continuum = ui.tbAdminDetectorContinuum->text().toDouble();
+    detector->continuumFunction = ui.cboxAdminDetectorContinuumFunction->currentText();
+    detector->criticalLevelTest = ui.cbAdminDetectorCriticalLevelTest->isChecked();
+    detector->useFixedFWHM = ui.cbAdminDetectorUseFixedFWHM->isChecked();
+    detector->useFixedTailParameter = ui.cbAdminDetectorUseFixedTailParameter->isChecked();
+    detector->fitSinglets = ui.cbAdminDetectorFitSinglets->isChecked();
+    detector->displayROIs = ui.cbAdminDetectorDisplayROIs->isChecked();
+    detector->rejectZeroAreaPeaks = ui.cbAdminDetectorRejectZeroAreaPeaks->isChecked();
+    detector->maxFWHMsBetweenPeaks = ui.tbAdminDetectorMaxFWHMsBetweenPeaks->text().toDouble();
+    detector->maxFWHMsForLeftLimit = ui.tbAdminDetectorMaxFWHMsForLeftLimit->text().toDouble();
+    detector->maxFWHMsForRightLimit = ui.tbAdminDetectorMaxFWHMsForRightLimit->text().toDouble();
+    detector->backgroundSubtract = ui.tbAdminDetectorBackgroundSubtract->text();
+    detector->efficiencyCalibrationType = ui.cboxAdminDetectorEfficiencyCalibrationType->currentText();
+    detector->presetType1 = ui.cboxAdminDetectorPresetType1->currentText();
+    detector->presetType1Value = ui.tbAdminDetectorPresetType1Value->text().toDouble();
+    detector->presetType2 = ui.cboxAdminDetectorPresetType2->currentText();
+    detector->presetType2Value = ui.tbAdminDetectorPresetType2Value->text().toDouble();
+
     writeDetectorXml(envDetectorFile, detectors);
     updateDetectorViews();
 }
@@ -525,38 +634,50 @@ void Nailab::onLvAdminDetectorsCurrentItemChanged(QListWidgetItem *current, QLis
     if(!current)
         return;    
 
-    QString detectorName = current->text();
-    ui.lblAdminDetectorDetector->setText(detectorName);
-    foreach(const Detector &detector, detectors)
+    Detector* detector = getDetectorByName(current->text());
+    ui.lblAdminDetectorDetector->setText(detector->name);
+
+    ui.cbAdminDetectorInUse->setChecked(detector->inUse);
+    ui.tbAdminDetectorSearchRegion->setText(QString::number(detector->searchRegion));
+    ui.tbAdminDetectorSignificanceTreshold->setText(QString::number(detector->significanceTreshold));
+    ui.tbAdminDetectorTolerance->setText(QString::number(detector->tolerance));
+    ui.tbAdminDetectorPeakAreaRegion->setText(QString::number(detector->peakAreaRegion));
+    ui.tbAdminDetectorContinuum->setText(QString::number(detector->continuum));
+    ui.cboxAdminDetectorContinuumFunction->setCurrentText(detector->continuumFunction);
+    ui.cbAdminDetectorCriticalLevelTest->setChecked(detector->criticalLevelTest);
+    ui.cbAdminDetectorUseFixedFWHM->setChecked(detector->useFixedFWHM);
+    ui.cbAdminDetectorUseFixedTailParameter->setChecked(detector->useFixedTailParameter);
+    ui.cbAdminDetectorFitSinglets->setChecked(detector->fitSinglets);
+    ui.cbAdminDetectorDisplayROIs->setChecked(detector->displayROIs);
+    ui.cbAdminDetectorRejectZeroAreaPeaks->setChecked(detector->rejectZeroAreaPeaks);
+    ui.tbAdminDetectorMaxFWHMsBetweenPeaks->setText(QString::number(detector->maxFWHMsBetweenPeaks));
+    ui.tbAdminDetectorMaxFWHMsForLeftLimit->setText(QString::number(detector->maxFWHMsForLeftLimit));
+    ui.tbAdminDetectorMaxFWHMsForRightLimit->setText(QString::number(detector->maxFWHMsForRightLimit));
+    ui.tbAdminDetectorBackgroundSubtract->setText(detector->backgroundSubtract);
+    ui.cboxAdminDetectorEfficiencyCalibrationType->setCurrentText(detector->efficiencyCalibrationType);
+    ui.cboxAdminDetectorPresetType1->setCurrentText(detector->presetType1);
+    ui.tbAdminDetectorPresetType1Value->setText(QString::number(detector->presetType1Value));
+    ui.cboxAdminDetectorPresetType2->setCurrentText(detector->presetType2);
+    ui.tbAdminDetectorPresetType2Value->setText(QString::number(detector->presetType2Value));
+
+    showBeakersForDetector(detector);
+}
+
+void Nailab::showBeakersForDetector(Detector *detector)
+{
+    for(int i=0; i<ui.twAdminDetectorBeaker->rowCount(); i++)
+        ui.twAdminDetectorBeaker->removeRow(i);
+
+    ui.twAdminDetectorBeaker->setRowCount(detector->beakers.count());
+
+    QMapIterator<QString, QString> iter(detector->beakers);
+    int i = 0;
+    while (iter.hasNext())
     {
-        if(detector.name == detectorName)
-        {
-            ui.cbAdminDetectorInUse->setChecked(detector.inUse);
-            ui.tbAdminDetectorSearchRegion->setText(QString::number(detector.searchRegion));
-            ui.tbAdminDetectorSignificanceTreshold->setText(QString::number(detector.significanceTreshold));
-            ui.tbAdminDetectorTolerance->setText(QString::number(detector.tolerance));
-            ui.tbAdminDetectorPeakAreaRegion->setText(QString::number(detector.peakAreaRegion));
-            ui.tbAdminDetectorContinuum->setText(QString::number(detector.continuum));
-            ui.cboxAdminDetectorContinuumFunction->setCurrentText(detector.continuumFunction);
-            ui.cbAdminDetectorCriticalLevelTest->setChecked(detector.criticalLevelTest);
-            ui.cbAdminDetectorUseFixedFWHM->setChecked(detector.useFixedFWHM);
-            ui.cbAdminDetectorUseFixedTailParameter->setChecked(detector.useFixedTailParameter);
-            ui.cbAdminDetectorFitSinglets->setChecked(detector.fitSinglets);
-            ui.cbAdminDetectorDisplayROIs->setChecked(detector.displayROIs);
-            ui.cbAdminDetectorRejectZeroAreaPeaks->setChecked(detector.rejectZeroAreaPeaks);
-            ui.tbAdminDetectorMaxFWHMsBetweenPeaks->setText(QString::number(detector.maxFWHMsBetweenPeaks));
-            ui.tbAdminDetectorMaxFWHMsForLeftLimit->setText(QString::number(detector.maxFWHMsForLeftLimit));
-            ui.tbAdminDetectorMaxFWHMsForRightLimit->setText(QString::number(detector.maxFWHMsForRightLimit));
-            ui.tbAdminDetectorBackgroundSubtract->setText(detector.backgroundSubtract);
-            ui.cboxAdminDetectorEfficiencyCalibrationType->setCurrentText(detector.efficiencyCalibrationType);                       
-            ui.cboxAdminDetectorPresetType->setCurrentText(detector.presetType);
-            ui.tbAdminDetectorAreaPreset->setText(QString::number(detector.areaPreset));
-            ui.tbAdminDetectorIntegralPreset->setText(QString::number(detector.integralPreset));
-            ui.tbAdminDetectorCountPreset->setText(QString::number(detector.countPreset));
-            ui.tbAdminDetectorRealtime->setText(QString::number(detector.realTime));
-            ui.tbAdminDetectorLivetime->setText(QString::number(detector.liveTime));
-            break;
-        }
+        iter.next();
+        ui.twAdminDetectorBeaker->setCellWidget(i, 0, new QLabel(iter.key()));
+        ui.twAdminDetectorBeaker->setCellWidget(i, 1, new QLabel(iter.value()));
+        i++;
     }
 }
 
@@ -595,31 +716,34 @@ void Nailab::onBrowseGenieFolder()
 
 void Nailab::onInputSampleAccepted()
 {
-    // TODO: Validate input
-    QFile jobfile(envTempDirectory.path() + "/job01.bat");
-    if(!jobfile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
-    {
-        QMessageBox::information(this, tr("Error"), tr("Unable to open job file"));
+    if(!validateSampleInput())
         return;
+
+    SampleInput sampleInput;
+
+    storeSampleInput(sampleInput);
+
+    if(!startJob(sampleInput))
+        return;
+}
+
+void Nailab::onAddDetectorBeaker()
+{
+    QStringList beakerlist;
+    for(int j=0; j<beakers.count(); j++)
+        beakerlist.append(beakers[j].name);
+
+    Detector* detector = getDetectorByName(ui.lvAdminDetectors->selectedItems()[0]->text());
+
+    foreach(QString key, detector->beakers.keys())
+    {
+        if(beakerlist.contains(key))
+            beakerlist.removeOne(key);
     }
-    QTextStream stream(&jobfile);
 
-    // pars
-    stream << "pars /PRUSESTRLIB=" << (settings.useStoredLibrary ? "1" : "0") << " /MDACONFID=" << settings.NIDConfidenceFactor << "\n";
-
-    // nid_intf
-    stream << "nid_intf /LIBRARY=\"" << settings.NIDLibrary << "\" /CONFID=" << settings.NIDConfidenceTreshold;
-    if(settings.performMDATest)
-        stream << " /MDA_TEST";
-    if(settings.inhibitATDCorrection)
-        stream << " /NOACQDECAY";
-    stream << "\n";
-
-    // startmca
-    stream << "startmca /INTPRESET=" << ui.tbInputSampleIntegralPreset->text()
-           << "," << "0" << "," << "512" << "\n"; // TODO: Get channels from mcalib
-
-    jobfile.close();
-
-    // TODO: Update spectrum counter
+    if(beakerlist.count() > 0)
+    {
+        dlgNewDetectorBeaker->setBeakers(beakerlist);
+        dlgNewDetectorBeaker->exec();
+    }
 }

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>435</width>
-    <height>744</height>
+    <height>713</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -281,64 +281,44 @@
    <item row="21" column="0">
     <widget class="QLabel" name="label_17">
      <property name="text">
-      <string>Preset type</string>
+      <string>Preset type 1</string>
      </property>
     </widget>
    </item>
    <item row="21" column="1">
-    <widget class="QComboBox" name="cboxPresetType"/>
+    <widget class="QComboBox" name="cboxPresetType1"/>
    </item>
    <item row="22" column="0">
     <widget class="QLabel" name="label_18">
      <property name="text">
-      <string>Area preset</string>
+      <string>Preset type 1 value</string>
      </property>
     </widget>
    </item>
    <item row="22" column="1">
-    <widget class="QLineEdit" name="tbAreaPreset"/>
+    <widget class="QLineEdit" name="tbPresetType1"/>
    </item>
    <item row="23" column="0">
-    <widget class="QLabel" name="label_19">
+    <widget class="QLabel" name="label_22">
      <property name="text">
-      <string>Integral preset</string>
+      <string>Preset type 2</string>
      </property>
     </widget>
    </item>
    <item row="23" column="1">
-    <widget class="QLineEdit" name="tbIntegralPreset"/>
+    <widget class="QComboBox" name="cboxPresetType2"/>
    </item>
    <item row="24" column="0">
-    <widget class="QLabel" name="label_20">
+    <widget class="QLabel" name="label_19">
      <property name="text">
-      <string>Count preset</string>
+      <string>Preset type 2 value</string>
      </property>
     </widget>
    </item>
    <item row="24" column="1">
-    <widget class="QLineEdit" name="tbCountPreset"/>
+    <widget class="QLineEdit" name="tbPresetType2"/>
    </item>
    <item row="25" column="0">
-    <widget class="QLabel" name="label_21">
-     <property name="text">
-      <string>Realtime</string>
-     </property>
-    </widget>
-   </item>
-   <item row="25" column="1">
-    <widget class="QLineEdit" name="tbRealtime"/>
-   </item>
-   <item row="26" column="0">
-    <widget class="QLabel" name="label_22">
-     <property name="text">
-      <string>Livetime</string>
-     </property>
-    </widget>
-   </item>
-   <item row="26" column="1">
-    <widget class="QLineEdit" name="tbLivetime"/>
-   </item>
-   <item row="27" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -351,7 +331,7 @@
      </property>
     </spacer>
    </item>
-   <item row="28" column="0" colspan="2">
+   <item row="26" column="0" colspan="2">
     <layout class="QHBoxLayout">
      <property name="spacing">
       <number>6</number>

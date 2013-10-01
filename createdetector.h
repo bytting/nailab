@@ -35,12 +35,11 @@ public:
     double maxFWHMsForRightLimit() const;
     QString backgroundSubtract() const;
     QString efficiencyCalibrationType() const;    
-    QString presetType() const;
-    double areaPreset() const;
-    int integralPreset() const;
-    int countPreset() const;
-    int realTime() const;
-    int liveTime() const;
+    QString presetType1() const;
+    double presetType1Value() const;
+    QString presetType2() const;
+    double presetType2Value() const;
+    int spectrumCounter() const;
 
 private:
     Ui::CreateDetector *ui;
