@@ -301,12 +301,12 @@ void Nailab::storeSampleInput(SampleInput& sampleInput)
     sampleInput.username = ui.tbInputSampleCollector->text();
     sampleInput.description = ui.tbInputSampleDescription->text();
     sampleInput.specterref = ui.tbInputSampleSpecterRef->text();
-    sampleInput.ID = ui.tbInputSampleSampleID->text();
-    sampleInput.type = ui.tbInputSampleSampleType->text();
-    sampleInput.quantity = ui.tbInputSampleSampleQuantity->text();
+    sampleInput.ID = ui.tbInputSampleID->text();
+    sampleInput.type = ui.tbInputSampleType->text();
+    sampleInput.quantity = ui.tbInputSampleQuantity->text();
     sampleInput.quantityError = ui.tbInputSampleQuantityUncertainty->text();
     sampleInput.units = ui.tbInputSampleQuantityUnits->text();
-    sampleInput.geometry = ui.tbInputSampleSampleGeometry->text();
+    sampleInput.geometry = ui.cbInputSampleGeometry->currentText();
     switch(ui.tabsInputSampleBuildupType->currentIndex())
     {
     case 0:
@@ -431,6 +431,12 @@ void Nailab::onDetectorSelect(QListWidgetItem *item)
         const Detector* det = getDetectorByName(item->text());
         if(!det)
             return; // FIXME: report error
+
+        ui.cbInputSampleGeometry->clear();
+        foreach(QString key, det->beakers.keys())
+            ui.cbInputSampleGeometry->addItem(key);
+
+        ui.cbInputSampleGeometry->setCurrentText(det->defaultBeaker);
 
         ui.tbInputSampleRandomError->setText("0");
         ui.tbInputSampleSystematicError->setText("0");
@@ -772,6 +778,27 @@ void Nailab::onDeleteDetectorBeaker()
     if(detector->beakers.contains(doe))
         detector->beakers.remove(doe);
 
+    detector->defaultBeaker = "";
+
     writeDetectorXml(envDetectorFile, detectors);
     showBeakersForDetector(detector);
+}
+
+void Nailab::onDefaultDetectorBeaker()
+{
+    if(ui.lvAdminDetectors->selectedItems().count() < 1)
+        return;
+
+    int row = ui.twAdminDetectorBeaker->currentRow();
+    if(row < 0)
+        return;
+
+    Detector* detector = getDetectorByName(ui.lvAdminDetectors->selectedItems()[0]->text());
+
+    QLabel *lbl = dynamic_cast<QLabel*>(ui.twAdminDetectorBeaker->cellWidget(row, 0));
+    QString def = lbl->text();
+
+    detector->defaultBeaker = def;
+
+    writeDetectorXml(envDetectorFile, detectors);
 }

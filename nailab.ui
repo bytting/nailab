@@ -46,7 +46,7 @@
     <item>
      <widget class="QStackedWidget" name="pages">
       <property name="currentIndex">
-       <number>1</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="pageMenu">
        <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -96,6 +96,9 @@
        </layout>
       </widget>
       <widget class="QWidget" name="pageInput">
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
          <widget class="QTabWidget" name="tabsInput">
@@ -108,6 +111,9 @@
           <widget class="QWidget" name="tabInputSample">
            <property name="accessibleName">
             <string/>
+           </property>
+           <property name="styleSheet">
+            <string notr="true"/>
            </property>
            <attribute name="title">
             <string>Sample</string>
@@ -152,7 +158,7 @@
                </font>
               </property>
               <property name="currentIndex">
-               <number>1</number>
+               <number>0</number>
               </property>
               <widget class="QWidget" name="pageInputSampleParameters">
                <property name="geometry">
@@ -170,14 +176,14 @@
                 </font>
                </property>
                <property name="styleSheet">
-                <string notr="true">background: rgb(255, 255, 255)</string>
+                <string notr="true"/>
                </property>
                <attribute name="label">
                 <string>Parameters</string>
                </attribute>
                <layout class="QGridLayout" name="gridLayout_9">
                 <item row="3" column="1">
-                 <widget class="QLineEdit" name="tbInputSampleSampleQuantity">
+                 <widget class="QLineEdit" name="tbInputSampleQuantity">
                   <property name="maxLength">
                    <number>32</number>
                   </property>
@@ -275,14 +281,14 @@
                  </widget>
                 </item>
                 <item row="2" column="1">
-                 <widget class="QLineEdit" name="tbInputSampleSampleID">
+                 <widget class="QLineEdit" name="tbInputSampleID">
                   <property name="maxLength">
                    <number>15</number>
                   </property>
                  </widget>
                 </item>
                 <item row="2" column="3">
-                 <widget class="QLineEdit" name="tbInputSampleSampleType">
+                 <widget class="QLineEdit" name="tbInputSampleType">
                   <property name="maxLength">
                    <number>15</number>
                   </property>
@@ -299,13 +305,6 @@
                  <widget class="QLabel" name="label_41">
                   <property name="text">
                    <string>Quantity Units</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="3">
-                 <widget class="QLineEdit" name="tbInputSampleSampleGeometry">
-                  <property name="maxLength">
-                   <number>15</number>
                   </property>
                  </widget>
                 </item>
@@ -425,6 +424,22 @@
                   </property>
                  </spacer>
                 </item>
+                <item row="4" column="3">
+                 <widget class="QComboBox" name="cbInputSampleGeometry">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </widget>
               <widget class="QWidget" name="pageInputSampleAdvancedParameters">
@@ -437,7 +452,7 @@
                 </rect>
                </property>
                <property name="styleSheet">
-                <string notr="true">background: rgb(255, 255, 255)</string>
+                <string notr="true"/>
                </property>
                <attribute name="label">
                 <string>Advanced parameters</string>
@@ -1145,7 +1160,7 @@
                       <enum>QAbstractItemView::SelectRows</enum>
                      </property>
                      <property name="columnCount">
-                      <number>2</number>
+                      <number>3</number>
                      </property>
                      <attribute name="horizontalHeaderVisible">
                       <bool>false</bool>
@@ -1159,6 +1174,7 @@
                      <attribute name="verticalHeaderDefaultSectionSize">
                       <number>20</number>
                      </attribute>
+                     <column/>
                      <column/>
                      <column/>
                     </widget>
@@ -1176,6 +1192,13 @@
                       <widget class="QPushButton" name="btnAdminDeleteDetectorBeaker">
                        <property name="text">
                         <string>Delete</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QPushButton" name="btnAdminDefaultDetectorBeaker">
+                       <property name="text">
+                        <string>Default</string>
                        </property>
                       </widget>
                      </item>
@@ -1805,6 +1828,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnAdminDefaultDetectorBeaker</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onDefaultDetectorBeaker()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>867</x>
+     <y>411</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>471</x>
+     <y>319</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onBack()</slot>
@@ -1833,5 +1872,6 @@
   <slot>onInputSampleAccepted()</slot>
   <slot>onAddDetectorBeaker()</slot>
   <slot>onDeleteDetectorBeaker()</slot>
+  <slot>onDefaultDetectorBeaker()</slot>
  </slots>
 </ui>

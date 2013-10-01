@@ -101,6 +101,7 @@ private slots:
     void onInputSampleAccepted();
     void onAddDetectorBeaker();
     void onDeleteDetectorBeaker();
+    void onDefaultDetectorBeaker();
 };
 
 #endif // NAILAB_H

@@ -33,6 +33,7 @@ struct Detector
     double presetType2Value;
     int spectrumCounter;
     QMap<QString, QString> beakers;
+    QString defaultBeaker;
 };
 
 #endif // DETECTOR_H

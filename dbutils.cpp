@@ -220,6 +220,7 @@ bool readDetectorXml(QFile& file, QList<Detector>& detectors)
         detector.presetType2 = xdetector.attribute("PresetType2");
         detector.presetType2Value = xdetector.attribute("PresetType2Value").toDouble();
         detector.spectrumCounter = xdetector.attribute("SpectrumCounter").toInt();
+        detector.defaultBeaker = xdetector.attribute("DefaultBeaker");
 
         QDomNodeList xbeakers = xdetector.elementsByTagName("Beaker");
         for(int j=0; j<xbeakers.count(); j++)
@@ -267,6 +268,7 @@ bool writeDetectorXml(QFile& file, const QList<Detector>& detectors)
         xdetector.setAttribute("PresetType2", detectors[i].presetType2);
         xdetector.setAttribute("PresetType2Value", detectors[i].presetType2Value);
         xdetector.setAttribute("SpectrumCounter", detectors[i].spectrumCounter);
+        xdetector.setAttribute("DefaultBeaker", detectors[i].defaultBeaker);
 
         QMapIterator<QString, QString> iter(detectors[i].beakers);
         while (iter.hasNext())
