@@ -46,7 +46,7 @@
     <item>
      <widget class="QStackedWidget" name="pages">
       <property name="currentIndex">
-       <number>3</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="pageMenu">
        <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -152,15 +152,15 @@
                </font>
               </property>
               <property name="currentIndex">
-               <number>0</number>
+               <number>1</number>
               </property>
               <widget class="QWidget" name="pageInputSampleParameters">
                <property name="geometry">
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>400</width>
-                 <height>289</height>
+                 <width>899</width>
+                 <height>391</height>
                 </rect>
                </property>
                <property name="font">
@@ -432,8 +432,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>363</width>
-                 <height>96</height>
+                 <width>899</width>
+                 <height>391</height>
                 </rect>
                </property>
                <property name="styleSheet">
@@ -534,12 +534,6 @@
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="1">
-                 <widget class="QComboBox" name="cboxInputSamplePresetType1"/>
-                </item>
-                <item row="1" column="3">
-                 <widget class="QComboBox" name="cboxInputSamplePresetType2"/>
-                </item>
                 <item row="1" column="2">
                  <widget class="QLabel" name="label_58">
                   <property name="text">
@@ -549,6 +543,12 @@
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                  </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QComboBox" name="cboxInputSamplePresetType1"/>
+                </item>
+                <item row="1" column="3">
+                 <widget class="QComboBox" name="cboxInputSamplePresetType2"/>
                 </item>
                </layout>
               </widget>
@@ -1789,6 +1789,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnAdminDeleteDetectorBeaker</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onDeleteDetectorBeaker()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>867</x>
+     <y>382</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>471</x>
+     <y>319</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onBack()</slot>
@@ -1816,5 +1832,6 @@
   <slot>onBrowseGenieFolder()</slot>
   <slot>onInputSampleAccepted()</slot>
   <slot>onAddDetectorBeaker()</slot>
+  <slot>onDeleteDetectorBeaker()</slot>
  </slots>
 </ui>

@@ -566,6 +566,9 @@ void Nailab::onNewDetectorBeakerAccepted()
 
     QString beaker = dlgNewDetectorBeaker->beaker();
     QString calfile = dlgNewDetectorBeaker->calfile();
+    if(beaker.isEmpty() || calfile.isEmpty())
+        return;
+
     Detector* d = getDetectorByName(ui.lvAdminDetectors->selectedItems()[0]->text());
     d->beakers[beaker] = calfile;
     writeDetectorXml(envDetectorFile, detectors);
@@ -729,6 +732,9 @@ void Nailab::onInputSampleAccepted()
 
 void Nailab::onAddDetectorBeaker()
 {
+    if(ui.lvAdminDetectors->selectedItems().count() < 1)
+        return;
+
     QStringList beakerlist;
     for(int j=0; j<beakers.count(); j++)
         beakerlist.append(beakers[j].name);
@@ -744,6 +750,28 @@ void Nailab::onAddDetectorBeaker()
     if(beakerlist.count() > 0)
     {
         dlgNewDetectorBeaker->setBeakers(beakerlist);
+        dlgNewDetectorBeaker->setCalFilePath(envLibraryDirectory.path());
         dlgNewDetectorBeaker->exec();
     }
+}
+
+void Nailab::onDeleteDetectorBeaker()
+{
+    if(ui.lvAdminDetectors->selectedItems().count() < 1)
+        return;
+
+    int row = ui.twAdminDetectorBeaker->currentRow();
+    if(row < 0)
+        return;
+
+    Detector* detector = getDetectorByName(ui.lvAdminDetectors->selectedItems()[0]->text());
+
+    QLabel *lbl = dynamic_cast<QLabel*>(ui.twAdminDetectorBeaker->cellWidget(row, 0));
+    QString doe = lbl->text();
+
+    if(detector->beakers.contains(doe))
+        detector->beakers.remove(doe);
+
+    writeDetectorXml(envDetectorFile, detectors);
+    showBeakersForDetector(detector);
 }

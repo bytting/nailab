@@ -93,5 +93,24 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnFilename</sender>
+   <signal>clicked()</signal>
+   <receiver>createdetectorbeaker</receiver>
+   <slot>selectFileClick()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>353</x>
+     <y>65</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>99</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
+ <slots>
+  <slot>selectFileClick()</slot>
+ </slots>
 </ui>

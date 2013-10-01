@@ -17,12 +17,17 @@ public:
     ~createdetectorbeaker();
 
     void setBeakers(const QStringList &beakers);
+    void setCalFilePath(const QString &path);
 
     QString beaker();
     QString calfile();
     
 private:
     Ui::createdetectorbeaker *ui;    
+    QString mPath;
+
+public slots:
+    void selectFileClick();
 };
 
 #endif // CREATEDETECTORBEAKER_H
