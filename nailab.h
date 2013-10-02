@@ -40,6 +40,7 @@ private:
     CreateDetector *dlgNewDetector;    
     createdetectorbeaker *dlgNewDetectorBeaker;
 
+    QString username;
     QDir envRootDirectory;
     QDir envConfigurationDirectory, envArchiveDirectory, envTempDirectory, envLibraryDirectory;
     QFile envSettingsFile, envBeakerFile, envDetectorFile, envQuantityUnitFile;

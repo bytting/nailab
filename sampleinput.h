@@ -19,6 +19,8 @@ struct SampleInput
     QString builduptype;
     QString startTime;
     QString endTime;
+    QString randomError;
+    QString systematicError;
 };
 
 #endif // SAMPLEINPUT_H

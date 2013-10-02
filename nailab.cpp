@@ -103,6 +103,10 @@ bool Nailab::setupEnvironment()
         QMessageBox::information(this, tr("Error"), tr("File not found: ") + envQuantityUnitFile.fileName());
         return false;
     }
+
+    if(!getWindowsUsername(username))
+        return false;
+
     return true;
 }
 
@@ -331,10 +335,13 @@ void Nailab::storeSampleInput(SampleInput& sampleInput)
         sampleInput.endTime = ui.dtInputSampleIrradEndDate->text();
         break;
     case 2:
-        sampleInput.builduptype = "";
+        sampleInput.builduptype = "NONE";
         sampleInput.startTime = ui.dtInputSampleNoneSampleDate->text();
         break;
     }
+    sampleInput.randomError = ui.tbInputSampleRandomError->text();
+    sampleInput.systematicError = ui.tbInputSampleSystematicError->text();
+
     // FIXME: Not finished
 }
 
@@ -347,49 +354,56 @@ bool Nailab::startJob(SampleInput& sampleInput)
         QMessageBox::information(this, tr("Error"), tr("Unable to open job file"));
         return false;
     }
-    QTextStream stream(&jobfile);
+    QTextStream stream(&jobfile);    
 
     // pars
-    stream << "pars /PRUSESTRLIB=" << (settings.useStoredLibrary ? "1" : "0") << " /MDACONFID=" << settings.NIDConfidenceFactor << "\n";
+    stream << "pars det:" << sampleInput.detector << " /stitle=\"" << sampleInput.title << "\" /scollname=\"" << username << "\" /sdesc1=\"" << sampleInput.description
+           << "\" /sdesc4=\"" << sampleInput.specterref << "\" /sident=\"" << sampleInput.ID << "\" /stype=\"" << sampleInput.type << "\" /squant=\"" << sampleInput.quantity
+           << "\" /squanterr=\"" << sampleInput.quantityError << "\" /sunits=\"" << sampleInput.units << "\" /sgeometry=\"" << sampleInput.geometry << "\" /builduptype=\""
+           << sampleInput.builduptype << "\" /stime=\"" << sampleInput.startTime << "\"\n"; // FIXME: End time
+
+    stream << "pars det:" << sampleInput.detector << " /ssyserr=" << sampleInput.randomError << " /ssysterr=" << sampleInput.systematicError << "\n";
+
+    Detector* detector = getDetectorByName(sampleInput.detector);
+
+    stream << "movedata det:" << sampleInput.detector << " \"" << detector->beakers[sampleInput.geometry] << "\" /effcal /overwrite\n";
+
+    // startmca
+    stream << "startmca det:" << sampleInput.detector << " ";
+
+    QString presetType = "";
+    if(ui.cboxInputSamplePresetType1->currentText() == "AREA")
+        presetType = "/AREAPRESET=";
+    else if(ui.cboxInputSamplePresetType1->currentText() == "INTEGRAL")
+        presetType = "/INTPRESET=";
+    else if(ui.cboxInputSamplePresetType1->currentText() == "COUNT")
+        presetType = "/CNTSPRESET=";
+
+    if(!presetType.isEmpty())
+        stream << presetType << ui.tbInputSamplePresetType1->text() << "," << "0" << "," << "512" << " "; // FIXME: Get channels from mcalib
+
+    presetType = "";
+    if(ui.cboxInputSamplePresetType2->currentText() == "REALTIME")
+        presetType = "/REALTIME=";
+    else if(ui.cboxInputSamplePresetType2->currentText() == "LIVETIME")
+        presetType = "/LIVETIME=";
+
+    if(!presetType.isEmpty())
+        stream << presetType << ui.tbInputSamplePresetType2->text();
+
+    stream << "\nwait det:" << sampleInput.detector << " /acq\n";
+
+    //stream << "pars /PRUSESTRLIB=" << (settings.useStoredLibrary ? "1" : "0") << " /MDACONFID=" << settings.NIDConfidenceFactor << "\n";
 
     // nid_intf
+    /*
     stream << "nid_intf /LIBRARY=\"" << settings.NIDLibrary << "\" /CONFID=" << settings.NIDConfidenceTreshold;
     if(settings.performMDATest)
         stream << " /MDA_TEST";
     if(settings.inhibitATDCorrection)
         stream << " /NOACQDECAY";
-    stream << "\n";
-
-    // startmca
-    stream << "startmca ";
-
-    QString presetType;
-    if(ui.cboxInputSamplePresetType1->currentText() == "AREA")
-    {
-        presetType = "/AREAPRESET=";
-    }
-    else if(ui.cboxInputSamplePresetType1->currentText() == "INTEGRAL")
-    {
-        presetType = "/INTPRESET=";
-    }
-    else if(ui.cboxInputSamplePresetType1->currentText() == "COUNT")
-    {
-        presetType = "/CNTSPRESET=";
-    }
-
-    stream << presetType << ui.tbInputSamplePresetType1->text() << "," << "0" << "," << "512" << " "; // FIXME: Get channels from mcalib
-
-    if(ui.cboxInputSamplePresetType2->currentText() == "REALTIME")
-    {
-        presetType = "/REALTIME=";
-    }
-    else if(ui.cboxInputSamplePresetType2->currentText() == "LIVETIME")
-    {
-        presetType = "/LIVETIME=";
-    }
-
-    stream << presetType << ui.tbInputSamplePresetType2->text() << "\n";
-
+    stream << "\n";    
+    */
     jobfile.close();
 
     // FIXME: Update spectrum counter
@@ -441,11 +455,7 @@ void Nailab::onDetectorSelect(QListWidgetItem *item)
 
         const Detector* det = getDetectorByName(item->text());
         if(!det)
-            return; // FIXME: report error
-
-        QString username;
-        if(!getWindowsUsername(username))
-            return; // FIXME: report error
+            return; // FIXME: report error        
 
         ui.tbInputSampleCollector->setText(username);
         ui.tbInputSampleSpecterRef->setText(QString::number(det->spectrumCounter));
