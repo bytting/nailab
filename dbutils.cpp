@@ -219,6 +219,8 @@ bool readDetectorXml(QFile& file, QList<Detector>& detectors)
         detector.presetType1Value = xdetector.attribute("PresetType1Value").toDouble();
         detector.presetType2 = xdetector.attribute("PresetType2");
         detector.presetType2Value = xdetector.attribute("PresetType2Value").toDouble();
+        detector.randomError = xdetector.attribute("RandomError").toDouble();
+        detector.systematicError = xdetector.attribute("SystematicError").toDouble();
         detector.spectrumCounter = xdetector.attribute("SpectrumCounter").toInt();
         detector.defaultBeaker = xdetector.attribute("DefaultBeaker");
 
@@ -267,6 +269,8 @@ bool writeDetectorXml(QFile& file, const QList<Detector>& detectors)
         xdetector.setAttribute("PresetType1Value", detectors[i].presetType1Value);
         xdetector.setAttribute("PresetType2", detectors[i].presetType2);
         xdetector.setAttribute("PresetType2Value", detectors[i].presetType2Value);
+        xdetector.setAttribute("RandomError", detectors[i].randomError);
+        xdetector.setAttribute("SystematicError", detectors[i].systematicError);
         xdetector.setAttribute("SpectrumCounter", detectors[i].spectrumCounter);
         xdetector.setAttribute("DefaultBeaker", detectors[i].defaultBeaker);
 
@@ -296,4 +300,25 @@ bool writeDetectorXml(QFile& file, const QList<Detector>& detectors)
     return true;
 }
 
+bool readQuantityUnitsXml(QFile &file, QStringList& units)
+{
+    QDomDocument document;
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        QMessageBox msgBox;
+        msgBox.setText("Unable to open file: " + file.fileName());
+        msgBox.exec();
+        return false;
+    }
+    document.setContent(&file);
+    file.close();
 
+    units.clear();
+
+    QDomElement xroot = document.firstChildElement();
+    QDomNodeList xunits = xroot.elementsByTagName("Unit");
+    for(int i=0; i<xunits.count(); i++)
+        units.append(xunits.at(i).toElement().text());
+
+    return true;
+}

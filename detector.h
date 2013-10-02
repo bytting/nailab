@@ -31,6 +31,8 @@ struct Detector
     QString presetType2;
     double presetType1Value;
     double presetType2Value;
+    double randomError;
+    double systematicError;
     int spectrumCounter;
     QMap<QString, QString> beakers;
     QString defaultBeaker;

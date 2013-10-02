@@ -146,6 +146,16 @@ double CreateDetector::presetType2Value() const
     return ui->tbPresetType2->text().toDouble();
 }
 
+double CreateDetector::randomError() const
+{
+    return ui->tbRandomError->text().toDouble();
+}
+
+double CreateDetector::systematicError() const
+{
+    return ui->tbSystematicError->text().toDouble();
+}
+
 int CreateDetector::spectrumCounter() const
 {
     return 0;

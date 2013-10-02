@@ -42,13 +42,13 @@ private:
 
     QDir envRootDirectory;
     QDir envConfigurationDirectory, envArchiveDirectory, envTempDirectory, envLibraryDirectory;
-    QFile envSettingsFile, envBeakerFile, envDetectorFile;
+    QFile envSettingsFile, envBeakerFile, envDetectorFile, envQuantityUnitFile;
 
     QMap<QWidget*, QActionGroup*> toolGroups;
     Settings settings;
     QList<Beaker> beakers;
     QList<Detector> detectors;
-    QList<QString> detectorNames;
+    QList<QString> detectorNames;    
     QListWidgetItem *listItemJobs, *listItemDetectors, *listItemArchive;    
 
     bool setupEnvironment();

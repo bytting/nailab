@@ -24,3 +24,13 @@ bool readGenieDetectorConfig(QList<QString> &mcaList)
     file.close();
     return true;
 }
+
+bool getWindowsUsername(QString& username)
+{
+    TCHAR uname[256];
+    DWORD nUname = sizeof(uname);
+    if(!GetUserName(uname, &nUname))
+        return false;
+    username = QString::fromStdWString(std::wstring(uname));
+    return true;
+}

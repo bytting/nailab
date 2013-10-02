@@ -96,6 +96,13 @@ bool Nailab::setupEnvironment()
         QMessageBox::information(this, tr("Error"), tr("File not found: ") + envDetectorFile.fileName());
         return false;
     }
+
+    envQuantityUnitFile.setFileName(envConfigurationDirectory.path() + "/quantity_units.xml");
+    if(!envQuantityUnitFile.exists())
+    {
+        QMessageBox::information(this, tr("Error"), tr("File not found: ") + envQuantityUnitFile.fileName());
+        return false;
+    }
     return true;
 }
 
@@ -185,6 +192,10 @@ void Nailab::configureWidgets()
     ui.cboxAdminDetectorPresetType2->addItems(items);
     ui.cboxInputSamplePresetType2->addItems(items);
 
+    QStringList quantityUnitList;
+    readQuantityUnitsXml(envQuantityUnitFile, quantityUnitList);
+    ui.cbInputSampleQuantityUnits->addItems(quantityUnitList);
+
     // Default tab pages
     ui.pages->setCurrentWidget(ui.pageMenu);
     ui.tabsAdmin->setCurrentWidget(ui.tabAdminGeneral);
@@ -200,9 +211,9 @@ void Nailab::configureWidgets()
     // Dates
     ui.dtInputSampleNoneSampleDate->setDate(QDate::currentDate());
     ui.dtInputSampleDepositBeginDate->setDate(QDate::currentDate());
-    ui.dtInputSampleDepositSampleDate->setDate(QDate::currentDate());
+    ui.dtInputSampleDepositEndDate->setDate(QDate::currentDate());
     ui.dtInputSampleIrradBeginDate->setDate(QDate::currentDate());
-    ui.dtInputSampleIrradSampleDate->setDate(QDate::currentDate());
+    ui.dtInputSampleIrradEndDate->setDate(QDate::currentDate());
 }
 
 void Nailab::updateSettings()
@@ -305,19 +316,19 @@ void Nailab::storeSampleInput(SampleInput& sampleInput)
     sampleInput.type = ui.tbInputSampleType->text();
     sampleInput.quantity = ui.tbInputSampleQuantity->text();
     sampleInput.quantityError = ui.tbInputSampleQuantityUncertainty->text();
-    sampleInput.units = ui.tbInputSampleQuantityUnits->text();
+    sampleInput.units = ui.cbInputSampleQuantityUnits->currentText();
     sampleInput.geometry = ui.cbInputSampleGeometry->currentText();
     switch(ui.tabsInputSampleBuildupType->currentIndex())
     {
     case 0:
         sampleInput.builduptype = "DEPOSIT";
         sampleInput.startTime = ui.dtInputSampleDepositBeginDate->text();
-        sampleInput.endTime = ui.dtInputSampleDepositSampleDate->text();
+        sampleInput.endTime = ui.dtInputSampleDepositEndDate->text();
         break;
     case 1:
         sampleInput.builduptype = "IRRAD";
         sampleInput.startTime = ui.dtInputSampleIrradBeginDate->text();
-        sampleInput.endTime = ui.dtInputSampleIrradSampleDate->text();
+        sampleInput.endTime = ui.dtInputSampleIrradEndDate->text();
         break;
     case 2:
         sampleInput.builduptype = "";
@@ -432,20 +443,24 @@ void Nailab::onDetectorSelect(QListWidgetItem *item)
         if(!det)
             return; // FIXME: report error
 
+        QString username;
+        if(!getWindowsUsername(username))
+            return; // FIXME: report error
+
+        ui.tbInputSampleCollector->setText(username);
+        ui.tbInputSampleSpecterRef->setText(QString::number(det->spectrumCounter));
+
         ui.cbInputSampleGeometry->clear();
         foreach(QString key, det->beakers.keys())
             ui.cbInputSampleGeometry->addItem(key);
-
         ui.cbInputSampleGeometry->setCurrentText(det->defaultBeaker);
 
-        ui.tbInputSampleRandomError->setText("0");
-        ui.tbInputSampleSystematicError->setText("0");
         ui.cboxInputSamplePresetType1->setCurrentText(det->presetType1);
         ui.tbInputSamplePresetType1->setText(QString::number(det->presetType1Value));
         ui.cboxInputSamplePresetType2->setCurrentText(det->presetType2);
         ui.tbInputSamplePresetType2->setText(QString::number(det->presetType2Value));
-
-        // FIXME: Fill in defaults
+        ui.tbInputSampleRandomError->setText(QString::number(det->randomError));
+        ui.tbInputSampleSystematicError->setText(QString::number(det->systematicError));
     }
 }
 
@@ -552,6 +567,8 @@ void Nailab::onNewDetectorAccepted()
     detector.presetType1Value = dlgNewDetector->presetType1Value();
     detector.presetType2 = dlgNewDetector->presetType2();
     detector.presetType2Value = dlgNewDetector->presetType2Value();
+    detector.randomError = dlgNewDetector->randomError();
+    detector.systematicError = dlgNewDetector->systematicError();
     detector.spectrumCounter = 0;
 
     detectors.push_back(detector);
@@ -611,6 +628,8 @@ void Nailab::onAdminDetectorsAccepted()
     detector->presetType1Value = ui.tbAdminDetectorPresetType1Value->text().toDouble();
     detector->presetType2 = ui.cboxAdminDetectorPresetType2->currentText();
     detector->presetType2Value = ui.tbAdminDetectorPresetType2Value->text().toDouble();
+    detector->randomError = ui.tbAdminDetectorRandomError->text().toDouble();
+    detector->systematicError = ui.tbAdminDetectorSystematicError->text().toDouble();
 
     writeDetectorXml(envDetectorFile, detectors);
     updateDetectorViews();
@@ -668,6 +687,8 @@ void Nailab::onLvAdminDetectorsCurrentItemChanged(QListWidgetItem *current, QLis
     ui.tbAdminDetectorPresetType1Value->setText(QString::number(detector->presetType1Value));
     ui.cboxAdminDetectorPresetType2->setCurrentText(detector->presetType2);
     ui.tbAdminDetectorPresetType2Value->setText(QString::number(detector->presetType2Value));
+    ui.tbAdminDetectorRandomError->setText(QString::number(detector->randomError));
+    ui.tbAdminDetectorSystematicError->setText(QString::number(detector->systematicError));
 
     showBeakersForDetector(detector);
 }

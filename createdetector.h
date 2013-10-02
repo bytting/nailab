@@ -39,6 +39,8 @@ public:
     double presetType1Value() const;
     QString presetType2() const;
     double presetType2Value() const;
+    double randomError() const;
+    double systematicError() const;
     int spectrumCounter() const;
 
 private:

@@ -1,14 +1,3 @@
-Hver detektor skal ha Sample input parametere (none, live real, integral area count)
-Detektor skal ha spekter referanse i XML
-
-'Quantity units' og 'Sample geometry' skal være dropdowns
-Endre Sample date til stop date for irrad og deposit
-Spekter ref er readonly
-Collector blir username
-
-Random error og Systematic error blir parameter for hver detektor
-preset grupper må ekskludere hverandre (2 dropdowns på admin)
-2 dropdowns for preset i sample input advanced, og kun en boks
 implementer spektrumcounter (og andre detektor parametere)
 legge til detektor parametere under advanced for overstyring
 generere parameter fil for hver analyse

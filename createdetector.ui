@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>435</width>
-    <height>713</height>
+    <height>762</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -318,7 +318,7 @@
    <item row="24" column="1">
     <widget class="QLineEdit" name="tbPresetType2"/>
    </item>
-   <item row="25" column="0">
+   <item row="27" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -331,7 +331,7 @@
      </property>
     </spacer>
    </item>
-   <item row="26" column="0" colspan="2">
+   <item row="28" column="0" colspan="2">
     <layout class="QHBoxLayout">
      <property name="spacing">
       <number>6</number>
@@ -376,6 +376,26 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item row="25" column="0">
+    <widget class="QLabel" name="label_20">
+     <property name="text">
+      <string>Random error</string>
+     </property>
+    </widget>
+   </item>
+   <item row="25" column="1">
+    <widget class="QLineEdit" name="tbRandomError"/>
+   </item>
+   <item row="26" column="0">
+    <widget class="QLabel" name="label_21">
+     <property name="text">
+      <string>Systematic error</string>
+     </property>
+    </widget>
+   </item>
+   <item row="26" column="1">
+    <widget class="QLineEdit" name="tbSystematicError"/>
    </item>
   </layout>
  </widget>
