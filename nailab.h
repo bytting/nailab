@@ -15,6 +15,7 @@
 #include "createbeaker.h"
 #include "createdetector.h"
 #include "createdetectorbeaker.h"
+#include "editdetectorbeaker.h"
 #include "beaker.h"
 #include "detector.h"
 
@@ -39,6 +40,7 @@ private:
     CreateBeaker *dlgNewBeaker;
     CreateDetector *dlgNewDetector;    
     createdetectorbeaker *dlgNewDetectorBeaker;
+    editdetectorbeaker *dlgEditDetectorBeaker;
 
     QString username;
     QDir envRootDirectory;
@@ -89,6 +91,7 @@ private slots:
     void onNewDetector();
     void onNewDetectorAccepted();
     void onNewDetectorBeakerAccepted();
+    void onEditDetectorBeakerAccepted();
     void onAdminDetectorsAccepted();    
 
     void onLvAdminBeakersCurrentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
@@ -100,9 +103,10 @@ private slots:
     void onBrowseGenieFolder();
 
     void onInputSampleAccepted();
-    void onAddDetectorBeaker();
+    void onAddDetectorBeaker();    
     void onDeleteDetectorBeaker();
-    void onDefaultDetectorBeaker();
+    void onEditDetectorBeaker();
+    void onSampleBeakerChanged(QString beaker);
 };
 
 #endif // NAILAB_H

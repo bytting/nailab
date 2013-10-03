@@ -15,7 +15,7 @@ CreateBeaker::~CreateBeaker()
 
 QString CreateBeaker::name() const
 {
-    return ui->tbName->text();
+    return ui->tbName->text().toUpper();
 }
 
 QString CreateBeaker::manufacturer() const

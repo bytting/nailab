@@ -41,9 +41,14 @@ bool CreateDetector::enabled() const
     return ui->cbEnabled->isChecked();
 }
 
-int CreateDetector::searchRegion() const
+int CreateDetector::searchRegionStart() const
 {
-    return ui->tbSearchRegion->text().toInt();
+    return ui->tbSearchRegionStart->text().toInt();
+}
+
+int CreateDetector::searchRegionEnd() const
+{
+    return ui->tbSearchRegionEnd->text().toInt();
 }
 
 double CreateDetector::significanceTreshold() const
@@ -56,9 +61,14 @@ double CreateDetector::tolerance() const
     return ui->tbTolerance->text().toDouble();
 }
 
-int CreateDetector::peakAreaRegion() const
+int CreateDetector::peakAreaRegionStart() const
 {
-    return ui->tbPeakAreaRegion->text().toInt();
+    return ui->tbPeakAreaRegionStart->text().toInt();
+}
+
+int CreateDetector::peakAreaRegionEnd() const
+{
+    return ui->tbPeakAreaRegionEnd->text().toInt();
 }
 
 double CreateDetector::continuum() const

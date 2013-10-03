@@ -18,7 +18,8 @@ SOURCES += main.cpp\
     dbutils.cpp \    
     mcalib.cpp \
     winutils.cpp \
-    createdetectorbeaker.cpp
+    createdetectorbeaker.cpp \
+    editdetectorbeaker.cpp
 
 HEADERS  += nailab.h \
     createbeaker.h \
@@ -30,12 +31,14 @@ HEADERS  += nailab.h \
     winutils.h \
     settings.h \
     sampleinput.h \
-    createdetectorbeaker.h
+    createdetectorbeaker.h \
+    editdetectorbeaker.h
 
 FORMS    += nailab.ui \
     createbeaker.ui \
     createdetector.ui \
-    createdetectorbeaker.ui
+    createdetectorbeaker.ui \
+    editdetectorbeaker.ui
 
 RESOURCES += nailab.qrc
 

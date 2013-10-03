@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>435</width>
-    <height>762</height>
+    <height>826</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -64,34 +64,34 @@
    <item row="3" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Search region</string>
+      <string>Search region start</string>
      </property>
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="QLineEdit" name="tbSearchRegion"/>
+    <widget class="QLineEdit" name="tbSearchRegionStart"/>
    </item>
-   <item row="4" column="0">
+   <item row="5" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
       <string>Significance treshold</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
+   <item row="5" column="1">
     <widget class="QLineEdit" name="tbSignificanceTreshold"/>
    </item>
-   <item row="5" column="0">
+   <item row="6" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
       <string>Tolerance</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
+   <item row="6" column="1">
     <widget class="QLineEdit" name="tbTolerance"/>
    </item>
-   <item row="6" column="0">
+   <item row="7" column="0">
     <widget class="QLabel" name="label_11">
      <property name="font">
       <font>
@@ -104,109 +104,109 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="0">
+   <item row="8" column="0">
     <widget class="QLabel" name="label_5">
      <property name="text">
-      <string>Peak area region</string>
+      <string>Peak area region start</string>
      </property>
     </widget>
    </item>
-   <item row="7" column="1">
-    <widget class="QLineEdit" name="tbPeakAreaRegion"/>
+   <item row="8" column="1">
+    <widget class="QLineEdit" name="tbPeakAreaRegionStart"/>
    </item>
-   <item row="8" column="0">
+   <item row="10" column="0">
     <widget class="QLabel" name="label_4">
      <property name="text">
       <string>Continuum</string>
      </property>
     </widget>
    </item>
-   <item row="8" column="1">
+   <item row="10" column="1">
     <widget class="QLineEdit" name="tbContinuum"/>
    </item>
-   <item row="9" column="0">
+   <item row="11" column="0">
     <widget class="QLabel" name="label_7">
      <property name="text">
       <string>Continuum function</string>
      </property>
     </widget>
    </item>
-   <item row="9" column="1">
+   <item row="11" column="1">
     <widget class="QComboBox" name="cboxContinuumFunction"/>
    </item>
-   <item row="10" column="0">
+   <item row="12" column="0">
     <widget class="QCheckBox" name="cbUseFixedFWHM">
      <property name="text">
       <string>Use fixed FWHM</string>
      </property>
     </widget>
    </item>
-   <item row="10" column="1">
+   <item row="12" column="1">
     <widget class="QCheckBox" name="cbCriticalLevelTest">
      <property name="text">
       <string>95% critical level test</string>
      </property>
     </widget>
    </item>
-   <item row="11" column="0">
+   <item row="13" column="0">
     <widget class="QCheckBox" name="cbUseFixedTailParameter">
      <property name="text">
       <string>Use fixed tail parameter</string>
      </property>
     </widget>
    </item>
-   <item row="11" column="1">
+   <item row="13" column="1">
     <widget class="QCheckBox" name="cbFixSinglets">
      <property name="text">
       <string>Fit singlets</string>
      </property>
     </widget>
    </item>
-   <item row="12" column="0">
+   <item row="14" column="0">
     <widget class="QCheckBox" name="cbDisplayROIs">
      <property name="text">
       <string>Display ROIs</string>
      </property>
     </widget>
    </item>
-   <item row="12" column="1">
+   <item row="14" column="1">
     <widget class="QCheckBox" name="cbRejectZeroAreaPeaks">
      <property name="text">
       <string>Reject zero area peaks</string>
      </property>
     </widget>
    </item>
-   <item row="13" column="0">
+   <item row="15" column="0">
     <widget class="QLabel" name="label_9">
      <property name="text">
       <string>Max FWHMs between peaks</string>
      </property>
     </widget>
    </item>
-   <item row="13" column="1">
+   <item row="15" column="1">
     <widget class="QLineEdit" name="tbMaxFWHMsBetweenPeaks"/>
    </item>
-   <item row="14" column="0">
+   <item row="16" column="0">
     <widget class="QLabel" name="label_12">
      <property name="text">
       <string>Max FWHMs for left limit</string>
      </property>
     </widget>
    </item>
-   <item row="14" column="1">
+   <item row="16" column="1">
     <widget class="QLineEdit" name="tbMaxFWHMsForLeftLimit"/>
    </item>
-   <item row="15" column="0">
+   <item row="17" column="0">
     <widget class="QLabel" name="label_6">
      <property name="text">
       <string>Max FWHMs for right limit</string>
      </property>
     </widget>
    </item>
-   <item row="15" column="1">
+   <item row="17" column="1">
     <widget class="QLineEdit" name="tbMaxFWHMsForRightLimit"/>
    </item>
-   <item row="16" column="0">
+   <item row="18" column="0">
     <widget class="QLabel" name="label_13">
      <property name="font">
       <font>
@@ -219,21 +219,21 @@
      </property>
     </widget>
    </item>
-   <item row="17" column="0">
+   <item row="19" column="0">
     <widget class="QLabel" name="label_8">
      <property name="text">
       <string>Background subtract</string>
      </property>
     </widget>
    </item>
-   <item row="17" column="1">
+   <item row="19" column="1">
     <widget class="QPushButton" name="btnBackgroundSubtract">
      <property name="text">
       <string>Browse...</string>
      </property>
     </widget>
    </item>
-   <item row="18" column="1">
+   <item row="20" column="1">
     <widget class="QLineEdit" name="tbBackgroundSubtract">
      <property name="enabled">
       <bool>false</bool>
@@ -255,7 +255,7 @@
      </property>
     </widget>
    </item>
-   <item row="19" column="0">
+   <item row="21" column="0">
     <widget class="QLabel" name="label_14">
      <property name="font">
       <font>
@@ -268,57 +268,57 @@
      </property>
     </widget>
    </item>
-   <item row="20" column="0">
+   <item row="22" column="0">
     <widget class="QLabel" name="label_15">
      <property name="text">
       <string>Efficiency calibration type</string>
      </property>
     </widget>
    </item>
-   <item row="20" column="1">
+   <item row="22" column="1">
     <widget class="QComboBox" name="cboxEfficiencyCalibrationType"/>
    </item>
-   <item row="21" column="0">
+   <item row="23" column="0">
     <widget class="QLabel" name="label_17">
      <property name="text">
       <string>Preset type 1</string>
      </property>
     </widget>
    </item>
-   <item row="21" column="1">
+   <item row="23" column="1">
     <widget class="QComboBox" name="cboxPresetType1"/>
    </item>
-   <item row="22" column="0">
+   <item row="24" column="0">
     <widget class="QLabel" name="label_18">
      <property name="text">
       <string>Preset type 1 value</string>
      </property>
     </widget>
    </item>
-   <item row="22" column="1">
+   <item row="24" column="1">
     <widget class="QLineEdit" name="tbPresetType1"/>
    </item>
-   <item row="23" column="0">
+   <item row="25" column="0">
     <widget class="QLabel" name="label_22">
      <property name="text">
       <string>Preset type 2</string>
      </property>
     </widget>
    </item>
-   <item row="23" column="1">
+   <item row="25" column="1">
     <widget class="QComboBox" name="cboxPresetType2"/>
    </item>
-   <item row="24" column="0">
+   <item row="26" column="0">
     <widget class="QLabel" name="label_19">
      <property name="text">
       <string>Preset type 2 value</string>
      </property>
     </widget>
    </item>
-   <item row="24" column="1">
+   <item row="26" column="1">
     <widget class="QLineEdit" name="tbPresetType2"/>
    </item>
-   <item row="27" column="0">
+   <item row="29" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -331,7 +331,7 @@
      </property>
     </spacer>
    </item>
-   <item row="28" column="0" colspan="2">
+   <item row="30" column="0" colspan="2">
     <layout class="QHBoxLayout">
      <property name="spacing">
       <number>6</number>
@@ -377,25 +377,45 @@
      </item>
     </layout>
    </item>
-   <item row="25" column="0">
+   <item row="27" column="0">
     <widget class="QLabel" name="label_20">
      <property name="text">
       <string>Random error</string>
      </property>
     </widget>
    </item>
-   <item row="25" column="1">
+   <item row="27" column="1">
     <widget class="QLineEdit" name="tbRandomError"/>
    </item>
-   <item row="26" column="0">
+   <item row="28" column="0">
     <widget class="QLabel" name="label_21">
      <property name="text">
       <string>Systematic error</string>
      </property>
     </widget>
    </item>
-   <item row="26" column="1">
+   <item row="28" column="1">
     <widget class="QLineEdit" name="tbSystematicError"/>
+   </item>
+   <item row="9" column="1">
+    <widget class="QLineEdit" name="tbPeakAreaRegionEnd"/>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="label_23">
+     <property name="text">
+      <string>Peak area region end</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QLineEdit" name="tbSearchRegionEnd"/>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_24">
+     <property name="text">
+      <string>Search region end</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

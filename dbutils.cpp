@@ -198,10 +198,12 @@ bool readDetectorXml(QFile& file, QList<Detector>& detectors)
         detector.name = xdetector.attribute("Name");
         detector.enabled = xdetector.attribute("Enabled") == "true" ? true : false;
         detector.inUse = xdetector.attribute("InUse") == "true" ? true : false;
-        detector.searchRegion = xdetector.attribute("SearchRegion").toInt();
+        detector.searchRegionStart = xdetector.attribute("SearchRegionStart").toInt();
+        detector.searchRegionEnd = xdetector.attribute("SearchRegionEnd").toInt();
         detector.significanceTreshold = xdetector.attribute("SignificanceTreshold").toDouble();
         detector.tolerance = xdetector.attribute("Tolerance").toDouble();
-        detector.peakAreaRegion = xdetector.attribute("PeakAreaRegion").toInt();
+        detector.peakAreaRegionStart = xdetector.attribute("PeakAreaRegionStart").toInt();
+        detector.peakAreaRegionEnd = xdetector.attribute("PeakAreaRegionEnd").toInt();
         detector.continuum = xdetector.attribute("Continuum").toDouble();
         detector.continuumFunction = xdetector.attribute("ContinuumFunction");
         detector.criticalLevelTest = xdetector.attribute("CriticalLevelTest") == "true" ? true : false;
@@ -221,8 +223,7 @@ bool readDetectorXml(QFile& file, QList<Detector>& detectors)
         detector.presetType2Value = xdetector.attribute("PresetType2Value").toDouble();
         detector.randomError = xdetector.attribute("RandomError").toDouble();
         detector.systematicError = xdetector.attribute("SystematicError").toDouble();
-        detector.spectrumCounter = xdetector.attribute("SpectrumCounter").toInt();
-        detector.defaultBeaker = xdetector.attribute("DefaultBeaker");
+        detector.spectrumCounter = xdetector.attribute("SpectrumCounter").toInt();        
 
         QDomNodeList xbeakers = xdetector.elementsByTagName("Beaker");
         for(int j=0; j<xbeakers.count(); j++)
@@ -248,10 +249,12 @@ bool writeDetectorXml(QFile& file, const QList<Detector>& detectors)
         xdetector.setAttribute("Name", detectors[i].name);
         xdetector.setAttribute("Enabled", detectors[i].enabled ? "true" : "false");
         xdetector.setAttribute("InUse", detectors[i].inUse ? "true" : "false");
-        xdetector.setAttribute("SearchRegion", detectors[i].searchRegion);
+        xdetector.setAttribute("SearchRegionStart", detectors[i].searchRegionStart);
+        xdetector.setAttribute("SearchRegionEnd", detectors[i].searchRegionEnd);
         xdetector.setAttribute("SignificanceTreshold", detectors[i].significanceTreshold);
         xdetector.setAttribute("Tolerance", detectors[i].tolerance);
-        xdetector.setAttribute("PeakAreaRegion", detectors[i].peakAreaRegion);
+        xdetector.setAttribute("PeakAreaRegionStart", detectors[i].peakAreaRegionStart);
+        xdetector.setAttribute("PeakAreaRegionEnd", detectors[i].peakAreaRegionEnd);
         xdetector.setAttribute("Continuum", detectors[i].continuum);
         xdetector.setAttribute("ContinuumFunction", detectors[i].continuumFunction);
         xdetector.setAttribute("CriticalLevelTest", detectors[i].criticalLevelTest ? "true" : "false");
@@ -271,8 +274,7 @@ bool writeDetectorXml(QFile& file, const QList<Detector>& detectors)
         xdetector.setAttribute("PresetType2Value", detectors[i].presetType2Value);
         xdetector.setAttribute("RandomError", detectors[i].randomError);
         xdetector.setAttribute("SystematicError", detectors[i].systematicError);
-        xdetector.setAttribute("SpectrumCounter", detectors[i].spectrumCounter);
-        xdetector.setAttribute("DefaultBeaker", detectors[i].defaultBeaker);
+        xdetector.setAttribute("SpectrumCounter", detectors[i].spectrumCounter);        
 
         QMapIterator<QString, QString> iter(detectors[i].beakers);
         while (iter.hasNext())

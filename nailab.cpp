@@ -120,6 +120,9 @@ void Nailab::setupDialogs()
 
     dlgNewDetectorBeaker = new createdetectorbeaker(this);
     connect(dlgNewDetectorBeaker, SIGNAL(accepted()), this, SLOT(onNewDetectorBeakerAccepted()));
+
+    dlgEditDetectorBeaker = new editdetectorbeaker(this);
+    connect(dlgEditDetectorBeaker, SIGNAL(accepted()), this, SLOT(onEditDetectorBeakerAccepted()));
 }
 
 bool Nailab::setupMCA()
@@ -156,6 +159,12 @@ bool Nailab::setupMCA()
         QMessageBox::information(this, tr("Error"), tr("Failed to open connection to VDM"));
         return false;
     }
+
+    for(int i=0; i<detectors.count(); i++)
+    {
+        detectors[i].maxChannels = 512; // FIXME: Get max from VDM
+    }
+
     return true;
 }
 
@@ -346,9 +355,8 @@ void Nailab::storeSampleInput(SampleInput& sampleInput)
 }
 
 bool Nailab::startJob(SampleInput& sampleInput)
-{
-    // FIXME: Not finished
-    QFile jobfile(envTempDirectory.path() + "/job01.bat");
+{    
+    QFile jobfile(envTempDirectory.path() + "/job-" + sampleInput.detector + ".bat");
     if(!jobfile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
     {
         QMessageBox::information(this, tr("Error"), tr("Unable to open job file"));
@@ -393,6 +401,8 @@ bool Nailab::startJob(SampleInput& sampleInput)
 
     stream << "\nwait det:" << sampleInput.detector << " /acq\n";
 
+    stream << "peak_dif det:" << sampleInput.detector << " /channels=1,1024 /signif=3.00 /ftol=0.2";
+
     //stream << "pars /PRUSESTRLIB=" << (settings.useStoredLibrary ? "1" : "0") << " /MDACONFID=" << settings.NIDConfidenceFactor << "\n";
 
     // nid_intf
@@ -404,6 +414,8 @@ bool Nailab::startJob(SampleInput& sampleInput)
         stream << " /NOACQDECAY";
     stream << "\n";    
     */
+
+    // FIXME: Not finished
     jobfile.close();
 
     // FIXME: Update spectrum counter
@@ -459,16 +471,14 @@ void Nailab::onDetectorSelect(QListWidgetItem *item)
 
         ui.tbInputSampleCollector->setText(username);
         ui.tbInputSampleSpecterRef->setText(QString::number(det->spectrumCounter));
-
         ui.cbInputSampleGeometry->clear();
-        foreach(QString key, det->beakers.keys())
-            ui.cbInputSampleGeometry->addItem(key);
-        ui.cbInputSampleGeometry->setCurrentText(det->defaultBeaker);
-
+        ui.cbInputSampleGeometry->addItems(det->beakers.keys());
         ui.cboxInputSamplePresetType1->setCurrentText(det->presetType1);
         ui.tbInputSamplePresetType1->setText(QString::number(det->presetType1Value));
         ui.cboxInputSamplePresetType2->setCurrentText(det->presetType2);
         ui.tbInputSamplePresetType2->setText(QString::number(det->presetType2Value));
+        ui.tbInputSampleStartChannel->setText(QString::number(1));
+        ui.tbInputSampleEndChannel->setText(QString::number(det->maxChannels));
         ui.tbInputSampleRandomError->setText(QString::number(det->randomError));
         ui.tbInputSampleSystematicError->setText(QString::number(det->systematicError));
     }
@@ -556,10 +566,12 @@ void Nailab::onNewDetectorAccepted()
     detector.name = dlgNewDetector->name();
     detector.enabled = dlgNewDetector->enabled();
     detector.inUse = true;
-    detector.searchRegion = dlgNewDetector->searchRegion();
+    detector.searchRegionStart = dlgNewDetector->searchRegionStart();
+    detector.searchRegionEnd = dlgNewDetector->searchRegionEnd();
     detector.significanceTreshold = dlgNewDetector->significanceTreshold();
     detector.tolerance = dlgNewDetector->tolerance();
-    detector.peakAreaRegion = dlgNewDetector->peakAreaRegion();
+    detector.peakAreaRegionStart = dlgNewDetector->peakAreaRegionStart();
+    detector.peakAreaRegionEnd = dlgNewDetector->peakAreaRegionEnd();
     detector.continuum = dlgNewDetector->continuum();
     detector.continuumFunction = dlgNewDetector->continuumFunction();
     detector.criticalLevelTest = dlgNewDetector->criticalLevelTest();
@@ -603,7 +615,23 @@ void Nailab::onNewDetectorBeakerAccepted()
         return;
 
     Detector* d = getDetectorByName(ui.lvAdminDetectors->selectedItems()[0]->text());
-    d->beakers[beaker] = calfile;
+    d->beakers[beaker] = QDir::cleanPath(calfile);
+    writeDetectorXml(envDetectorFile, detectors);
+    showBeakersForDetector(d);
+}
+
+void Nailab::onEditDetectorBeakerAccepted()
+{
+    if(ui.lvAdminDetectors->selectedItems().count() < 1)
+        return;
+
+    QString beaker = dlgEditDetectorBeaker->beaker();
+    QString calfile = dlgEditDetectorBeaker->calfile();
+    if(beaker.isEmpty() || calfile.isEmpty())
+        return;
+
+    Detector* d = getDetectorByName(ui.lvAdminDetectors->selectedItems()[0]->text());
+    d->beakers[beaker] = QDir::cleanPath(calfile);
     writeDetectorXml(envDetectorFile, detectors);
     showBeakersForDetector(d);
 }
@@ -617,10 +645,12 @@ void Nailab::onAdminDetectorsAccepted()
     Detector* detector = getDetectorByName(detectorName);
 
     detector->inUse = ui.cbAdminDetectorInUse->isChecked();
-    detector->searchRegion = ui.tbAdminDetectorSearchRegion->text().toInt();
+    detector->searchRegionStart = ui.tbAdminDetectorSearchRegionStart->text().toInt();
+    detector->searchRegionEnd = ui.tbAdminDetectorSearchRegionEnd->text().toInt();
     detector->significanceTreshold = ui.tbAdminDetectorSignificanceTreshold->text().toDouble();
     detector->tolerance = ui.tbAdminDetectorTolerance->text().toDouble();
-    detector->peakAreaRegion = ui.tbAdminDetectorPeakAreaRegion->text().toInt();
+    detector->peakAreaRegionStart = ui.tbAdminDetectorPeakAreaRegionStart->text().toInt();
+    detector->peakAreaRegionEnd = ui.tbAdminDetectorPeakAreaRegionEnd->text().toInt();
     detector->continuum = ui.tbAdminDetectorContinuum->text().toDouble();
     detector->continuumFunction = ui.cboxAdminDetectorContinuumFunction->currentText();
     detector->criticalLevelTest = ui.cbAdminDetectorCriticalLevelTest->isChecked();
@@ -676,10 +706,12 @@ void Nailab::onLvAdminDetectorsCurrentItemChanged(QListWidgetItem *current, QLis
     ui.lblAdminDetectorDetector->setText(detector->name);
 
     ui.cbAdminDetectorInUse->setChecked(detector->inUse);
-    ui.tbAdminDetectorSearchRegion->setText(QString::number(detector->searchRegion));
+    ui.tbAdminDetectorSearchRegionStart->setText(QString::number(detector->searchRegionStart));
+    ui.tbAdminDetectorSearchRegionEnd->setText(QString::number(detector->searchRegionEnd));
     ui.tbAdminDetectorSignificanceTreshold->setText(QString::number(detector->significanceTreshold));
     ui.tbAdminDetectorTolerance->setText(QString::number(detector->tolerance));
-    ui.tbAdminDetectorPeakAreaRegion->setText(QString::number(detector->peakAreaRegion));
+    ui.tbAdminDetectorPeakAreaRegionStart->setText(QString::number(detector->peakAreaRegionStart));
+    ui.tbAdminDetectorPeakAreaRegionEnd->setText(QString::number(detector->peakAreaRegionEnd));
     ui.tbAdminDetectorContinuum->setText(QString::number(detector->continuum));
     ui.cboxAdminDetectorContinuumFunction->setCurrentText(detector->continuumFunction);
     ui.cbAdminDetectorCriticalLevelTest->setChecked(detector->criticalLevelTest);
@@ -786,6 +818,7 @@ void Nailab::onAddDetectorBeaker()
 
     if(beakerlist.count() > 0)
     {
+        dlgNewDetectorBeaker->setDetector(detector->name);
         dlgNewDetectorBeaker->setBeakers(beakerlist);
         dlgNewDetectorBeaker->setCalFilePath(envLibraryDirectory.path());
         dlgNewDetectorBeaker->exec();
@@ -807,15 +840,13 @@ void Nailab::onDeleteDetectorBeaker()
     QString doe = lbl->text();
 
     if(detector->beakers.contains(doe))
-        detector->beakers.remove(doe);
-
-    detector->defaultBeaker = "";
+        detector->beakers.remove(doe);    
 
     writeDetectorXml(envDetectorFile, detectors);
     showBeakersForDetector(detector);
 }
 
-void Nailab::onDefaultDetectorBeaker()
+void Nailab::onEditDetectorBeaker()
 {
     if(ui.lvAdminDetectors->selectedItems().count() < 1)
         return;
@@ -827,9 +858,25 @@ void Nailab::onDefaultDetectorBeaker()
     Detector* detector = getDetectorByName(ui.lvAdminDetectors->selectedItems()[0]->text());
 
     QLabel *lbl = dynamic_cast<QLabel*>(ui.twAdminDetectorBeaker->cellWidget(row, 0));
-    QString def = lbl->text();
+    QString beakerName = lbl->text();
 
-    detector->defaultBeaker = def;
+    dlgEditDetectorBeaker->setDetector(detector->name);
+    dlgEditDetectorBeaker->setBeaker(beakerName);
+    dlgEditDetectorBeaker->setCalFilePath(envLibraryDirectory.path());
+    dlgEditDetectorBeaker->exec();
+}
 
-    writeDetectorXml(envDetectorFile, detectors);
+void Nailab::onSampleBeakerChanged(QString beaker)
+{
+    QString detectorName = ui.lblInputSampleDetector->text();
+    QString filter = detectorName + beaker + "*.cal";
+    QStringList filters;
+    filters.append(filter);
+    QDir dir(envLibraryDirectory.path());
+    QStringList calfiles = dir.entryList(filters, QDir::Files);
+    ui.cboxInputSampleCalFiles->clear();
+    for(int i=0; i<calfiles.count(); i++)
+        ui.cboxInputSampleCalFiles->addItem(QDir::cleanPath(envLibraryDirectory.path() + QDir::separator() + calfiles[i]));
+    Detector* det = getDetectorByName(detectorName);
+    ui.cboxInputSampleCalFiles->setCurrentText(det->beakers[beaker]);
 }

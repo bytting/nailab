@@ -109,8 +109,25 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>cbBeaker</sender>
+   <signal>currentTextChanged(QString)</signal>
+   <receiver>createdetectorbeaker</receiver>
+   <slot>beakerSelected(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>159</x>
+     <y>37</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>99</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>selectFileClick()</slot>
+  <slot>beakerSelected(QString)</slot>
  </slots>
 </ui>

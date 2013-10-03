@@ -18,10 +18,12 @@ public:
     QString name() const;
     void setName(QString name);
     bool enabled() const;
-    int searchRegion() const;
+    int searchRegionStart() const;
+    int searchRegionEnd() const;
     double significanceTreshold() const;
     double tolerance() const;
-    int peakAreaRegion() const;
+    int peakAreaRegionStart() const;
+    int peakAreaRegionEnd() const;
     double continuum() const;
     QString continuumFunction() const;
     bool criticalLevelTest() const;

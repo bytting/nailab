@@ -16,6 +16,7 @@ public:
     explicit createdetectorbeaker(QWidget *parent = 0);
     ~createdetectorbeaker();
 
+    void setDetector(const QString &detector);
     void setBeakers(const QStringList &beakers);
     void setCalFilePath(const QString &path);
 
@@ -24,10 +25,11 @@ public:
     
 private:
     Ui::createdetectorbeaker *ui;    
-    QString mPath;
+    QString mPath, mDetector, mFilter;
 
 public slots:
     void selectFileClick();
+    void beakerSelected(QString beaker);
 };
 
 #endif // CREATEDETECTORBEAKER_H

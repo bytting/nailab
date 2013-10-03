@@ -15,9 +15,15 @@ createdetectorbeaker::~createdetectorbeaker()
     delete ui;
 }
 
+void createdetectorbeaker::setDetector(const QString &detector)
+{
+    mDetector = detector;
+}
+
 void createdetectorbeaker::setBeakers(const QStringList &beakers)
 {
     ui->cbBeaker->clear();
+    ui->cbBeaker->addItem("");
     ui->cbBeaker->addItems(beakers);
 }
 
@@ -37,10 +43,15 @@ QString createdetectorbeaker::calfile()
 }
 
 void createdetectorbeaker::selectFileClick()
-{
-    QString filename = QFileDialog::getOpenFileName(this, tr("Select cal file"), mPath, tr("CAL files (%1)").arg("*.cal"));
+{    
+    QString filename = QFileDialog::getOpenFileName(this, tr("Select cal file"), mPath, tr("CAL files (%1)").arg(mFilter));
     if(QFile::exists(filename))
     {
         ui->txtFilename->setText(filename);
     }
+}
+
+void createdetectorbeaker::beakerSelected(QString beaker)
+{
+    mFilter = mDetector + beaker + "*.cal";
 }

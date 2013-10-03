@@ -10,10 +10,12 @@ struct Detector
     bool enabled;
     bool inUse;
     int maxChannels;
-    int searchRegion;
+    int searchRegionStart;
+    int searchRegionEnd;
     double significanceTreshold;
     double tolerance;
-    int peakAreaRegion;
+    int peakAreaRegionStart;
+    int peakAreaRegionEnd;
     double continuum;
     QString continuumFunction;
     bool criticalLevelTest;
@@ -34,8 +36,7 @@ struct Detector
     double randomError;
     double systematicError;
     int spectrumCounter;
-    QMap<QString, QString> beakers;
-    QString defaultBeaker;
+    QMap<QString, QString> beakers;    
 };
 
 #endif // DETECTOR_H
