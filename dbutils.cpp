@@ -34,19 +34,7 @@ bool readSettingsXml(QFile &file, Settings& settings)
     {
         QDomElement xnode = xnodes.at(i).toElement();
         if(xnode.tagName() == "GenieFolder")
-            settings.genieFolder = xnode.text();        
-        else if(xnode.tagName() == "NIDLibrary")
-            settings.NIDLibrary = xnode.text();
-        else if(xnode.tagName() == "NIDConfidenceTreshold")
-            settings.NIDConfidenceTreshold = xnode.text().toDouble();
-        else if(xnode.tagName() == "MDAConfidenceFactor")
-            settings.MDAConfidenceFactor = xnode.text().toDouble();
-        else if(xnode.tagName() == "PerformMDATest")
-            settings.performMDATest = (xnode.text() == "true") ? true : false;
-        else if(xnode.tagName() == "InhibitATDCorrection")
-            settings.inhibitATDCorrection = (xnode.text() == "true") ? true : false;
-        else if(xnode.tagName() == "UseStoredLibrary")
-            settings.useStoredLibrary = (xnode.text() == "true") ? true : false;
+            settings.genieFolder = xnode.text();                
         else if(xnode.tagName() == "TemplateName")
             settings.templateName = xnode.text();
         else if(xnode.tagName() == "SectionName")
@@ -66,30 +54,6 @@ bool writeSettingsXml(QFile &file, const Settings& settings)
     QDomElement xnode = document.createElement("GenieFolder");
     xnode.appendChild(document.createTextNode(settings.genieFolder));
     xroot.appendChild(xnode);    
-
-    xnode = document.createElement("NIDLibrary");
-    xnode.appendChild(document.createTextNode(settings.NIDLibrary));
-    xroot.appendChild(xnode);
-
-    xnode = document.createElement("NIDConfidenceTreshold");
-    xnode.appendChild(document.createTextNode(QString::number(settings.NIDConfidenceTreshold)));
-    xroot.appendChild(xnode);
-
-    xnode = document.createElement("MDAConfidenceFactor");
-    xnode.appendChild(document.createTextNode(QString::number(settings.MDAConfidenceFactor)));
-    xroot.appendChild(xnode);
-
-    xnode = document.createElement("PerformMDATest");
-    xnode.appendChild(document.createTextNode(settings.performMDATest ? "true" : "false"));
-    xroot.appendChild(xnode);
-
-    xnode = document.createElement("InhibitATDCorrection");
-    xnode.appendChild(document.createTextNode(settings.inhibitATDCorrection ? "true" : "false"));
-    xroot.appendChild(xnode);
-
-    xnode = document.createElement("UseStoredLibrary");
-    xnode.appendChild(document.createTextNode(settings.useStoredLibrary ? "true" : "false"));
-    xroot.appendChild(xnode);
 
     xnode = document.createElement("TemplateName");
     xnode.appendChild(document.createTextNode(settings.templateName));
@@ -233,6 +197,13 @@ bool readDetectorXml(QFile& file, QList<Detector>& detectors)
             detector.beakers[xbeaker.attribute("BeakerName")] = xbeaker.attribute("CalFile");
         }
 
+        detector.NIDLibrary = xdetector.attribute("NIDLibrary");
+        detector.NIDConfidenceTreshold = xdetector.attribute("NIDConfidenceTreshold").toDouble();
+        detector.MDAConfidenceFactor = xdetector.attribute("MDAConfidenceFactor").toDouble();
+        detector.performMDATest = xdetector.attribute("PerformMDATest") == "true" ? true : false;
+        detector.inhibitATDCorrection = xdetector.attribute("InhibitATDCorrection") == "true" ? true : false;
+        detector.useStoredLibrary = xdetector.attribute("UseStoredLibrary") == "true" ? true : false;
+
         detectors.push_back(detector);
     }
     return true;
@@ -287,6 +258,13 @@ bool writeDetectorXml(QFile& file, const QList<Detector>& detectors)
             xbeaker.setAttribute("CalFile", iter.value());
             xdetector.appendChild(xbeaker);
         }
+
+        xdetector.setAttribute("NIDLibrary", detectors[i].NIDLibrary);
+        xdetector.setAttribute("NIDConfidenceTreshold", detectors[i].NIDConfidenceTreshold);
+        xdetector.setAttribute("MDAConfidenceFactor", detectors[i].MDAConfidenceFactor);
+        xdetector.setAttribute("PerformMDATest", detectors[i].performMDATest ? "true" : "false");
+        xdetector.setAttribute("InhibitATDCorrection", detectors[i].inhibitATDCorrection ? "true" : "false");
+        xdetector.setAttribute("UseStoredLibrary", detectors[i].useStoredLibrary ? "true" : "false");
 
         xroot.appendChild(xdetector);
     }

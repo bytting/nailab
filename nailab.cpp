@@ -242,12 +242,6 @@ void Nailab::configureWidgets()
 void Nailab::updateSettings()
 {
     ui.tbAdminGeneralGenieFolder->setText(settings.genieFolder);    
-    ui.tbAdminGeneralNIDLibrary->setText(settings.NIDLibrary);
-    ui.tbAdminGeneralNIDConfidenceTreshold->setText(QString::number(settings.NIDConfidenceTreshold));
-    ui.tbAdminGeneralMDAConfidenceFactor->setText(QString::number(settings.MDAConfidenceFactor));
-    ui.cbAdminGeneralPerformMDATest->setChecked(settings.performMDATest);
-    ui.cbAdminGeneralInhibitATDCorrection->setChecked(settings.inhibitATDCorrection);
-    ui.cbAdminGeneralUseStoredLibrary->setChecked(settings.useStoredLibrary);
     ui.tbAdminGeneralTemplateName->setText(settings.templateName);
     ui.cboxAdminGeneralSectionName->setCurrentText(settings.sectionName);
     ui.tbAdminGeneralErrorMultiplier->setText(QString::number(settings.errorMultiplier));
@@ -491,6 +485,7 @@ void Nailab::onDetectorSelect(QListWidgetItem *item)
         ui.tbInputSampleEndChannel->setText(QString::number(det->maxChannels));
         ui.tbInputSampleRandomError->setText(QString::number(det->randomError));
         ui.tbInputSampleSystematicError->setText(QString::number(det->systematicError));
+        // FIXME: Not finished...
     }
 }
 
@@ -518,13 +513,7 @@ void Nailab::onTabsAdminChanged(int index)
 
 void Nailab::onAdminGeneralAccepted()
 {       
-    settings.genieFolder = ui.tbAdminGeneralGenieFolder->text();    
-    settings.NIDLibrary = ui.tbAdminGeneralNIDLibrary->text();
-    settings.NIDConfidenceTreshold = ui.tbAdminGeneralNIDConfidenceTreshold->text().toDouble();
-    settings.MDAConfidenceFactor = ui.tbAdminGeneralMDAConfidenceFactor->text().toDouble();
-    settings.performMDATest = ui.cbAdminGeneralPerformMDATest->isChecked();
-    settings.inhibitATDCorrection = ui.cbAdminGeneralInhibitATDCorrection->isChecked();
-    settings.useStoredLibrary = ui.cbAdminGeneralUseStoredLibrary->isChecked();
+    settings.genieFolder = ui.tbAdminGeneralGenieFolder->text();        
     settings.templateName = ui.tbAdminGeneralTemplateName->text();
     settings.sectionName = ui.cboxAdminGeneralSectionName->currentText();
     settings.errorMultiplier = ui.tbAdminGeneralErrorMultiplier->text().toDouble();
@@ -603,6 +592,13 @@ void Nailab::onNewDetectorAccepted()
     detector.randomError = dlgNewDetector->randomError();
     detector.systematicError = dlgNewDetector->systematicError();
     detector.spectrumCounter = 0;
+    // FIXME: Set at creation
+    detector.NIDLibrary = "";
+    detector.NIDConfidenceTreshold = 0.0;
+    detector.MDAConfidenceFactor = 0.0;
+    detector.performMDATest = false;
+    detector.inhibitATDCorrection = false;
+    detector.useStoredLibrary = false;
 
     detectors.push_back(detector);
     writeDetectorXml(envDetectorFile, detectors);
@@ -681,7 +677,13 @@ void Nailab::onAdminDetectorsAccepted()
     detector->presetType2Value = ui.tbAdminDetectorPresetType2Value->text().toDouble();
     detector->presetType2Unit = ui.cboxAdminDetectorPresetType2Unit->currentText();
     detector->randomError = ui.tbAdminDetectorRandomError->text().toDouble();
-    detector->systematicError = ui.tbAdminDetectorSystematicError->text().toDouble();
+    detector->systematicError = ui.tbAdminDetectorSystematicError->text().toDouble();    
+    detector->NIDLibrary = ui.tbAdminDetectorNIDLibrary->text();
+    detector->NIDConfidenceTreshold = ui.tbAdminDetectorNIDConfidenceTreshold->text().toDouble();
+    detector->MDAConfidenceFactor = ui.tbAdminDetectorMDAConfidenceFactor->text().toDouble();
+    detector->performMDATest = ui.cbAdminDetectorPerformMDATest->isChecked();
+    detector->inhibitATDCorrection = ui.cbAdminDetectorInhibitATDCorrection->isChecked();
+    detector->useStoredLibrary = ui.cbAdminDetectorUseStoredLibrary->isChecked();
 
     writeDetectorXml(envDetectorFile, detectors);
     updateDetectorViews();
@@ -744,6 +746,12 @@ void Nailab::onLvAdminDetectorsCurrentItemChanged(QListWidgetItem *current, QLis
     ui.cboxAdminDetectorPresetType2Unit->setCurrentText(detector->presetType2Unit);
     ui.tbAdminDetectorRandomError->setText(QString::number(detector->randomError));
     ui.tbAdminDetectorSystematicError->setText(QString::number(detector->systematicError));
+    ui.tbAdminDetectorNIDLibrary->setText(detector->NIDLibrary);
+    ui.tbAdminDetectorNIDConfidenceTreshold->setText(QString::number(detector->NIDConfidenceTreshold));
+    ui.tbAdminDetectorMDAConfidenceFactor->setText(QString::number(detector->MDAConfidenceFactor));
+    ui.cbAdminDetectorPerformMDATest->setChecked(detector->performMDATest);
+    ui.cbAdminDetectorInhibitATDCorrection->setChecked(detector->inhibitATDCorrection);
+    ui.cbAdminDetectorUseStoredLibrary->setChecked(detector->useStoredLibrary);
 
     showBeakersForDetector(detector);
 }
@@ -789,7 +797,7 @@ void Nailab::onBrowseNIDLibrary()
     QString filename = QFileDialog::getOpenFileName(this, tr("Select library file"), envLibraryDirectory.path(), tr("Library files (%1)").arg("*.nlb"));
     if(QFile::exists(filename))
     {
-        ui.tbAdminGeneralNIDLibrary->setText(filename);
+        ui.tbAdminDetectorNIDLibrary->setText(filename);
     }
 }
 

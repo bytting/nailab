@@ -5,13 +5,7 @@
 
 struct Settings
 {
-    QString genieFolder;    
-    QString NIDLibrary;
-    double NIDConfidenceTreshold;
-    double MDAConfidenceFactor;
-    bool performMDATest;
-    bool inhibitATDCorrection;
-    bool useStoredLibrary;
+    QString genieFolder;        
     QString templateName;
     QString sectionName;
     double errorMultiplier;

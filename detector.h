@@ -37,7 +37,13 @@ struct Detector
     double randomError;
     double systematicError;
     int spectrumCounter;
-    QMap<QString, QString> beakers;    
+    QMap<QString, QString> beakers;
+    QString NIDLibrary;
+    double NIDConfidenceTreshold;
+    double MDAConfidenceFactor;
+    bool performMDATest;
+    bool inhibitATDCorrection;
+    bool useStoredLibrary;
 };
 
 #endif // DETECTOR_H
