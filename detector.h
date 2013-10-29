@@ -31,8 +31,9 @@ struct Detector
     QString efficiencyCalibrationType;
     QString presetType1;
     QString presetType2;
-    double presetType1Value;
+    double presetType1Value;    
     double presetType2Value;
+    QString presetType2Unit;
     double randomError;
     double systematicError;
     int spectrumCounter;

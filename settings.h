@@ -8,7 +8,7 @@ struct Settings
     QString genieFolder;    
     QString NIDLibrary;
     double NIDConfidenceTreshold;
-    double NIDConfidenceFactor;
+    double MDAConfidenceFactor;
     bool performMDATest;
     bool inhibitATDCorrection;
     bool useStoredLibrary;

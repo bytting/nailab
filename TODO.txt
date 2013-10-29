@@ -1,3 +1,22 @@
 implementer spektrumcounter (og andre detektor parametere)
 legge til detektor parametere under advanced for overstyring
 generere parameter fil for hver analyse
+
+
+Legge til /newfile /firstpg /newpg hardkodet
+- report det:det01 /template="c:\nailab\lorakon.tpl" /newfile /firstpg /newpg /outfile="c:\nailab\spekter\det01spekter.rpt" /section="" /EM=2
+Legge til /screen og /printer med default.
+Hvis /printer ikke er valgt, skal DATAPLOT fjernes fra script
+
+
+Dataplot skal ha Scale parameter (LOG/LINEAR)
+Dataplot skal ha harkodet parameter /ENHPLOT
+
+
+Hardkode
+pars det:det01 /activunits="Bq" /ACTIVMULT=27000
+
+
+Flytte "Admin - General - Nuclide Identification" til hver detektor
+
+Sample input skal ha tom dropdown for beaker hvis det er mer enn en beaker

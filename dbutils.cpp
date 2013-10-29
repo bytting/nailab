@@ -39,8 +39,8 @@ bool readSettingsXml(QFile &file, Settings& settings)
             settings.NIDLibrary = xnode.text();
         else if(xnode.tagName() == "NIDConfidenceTreshold")
             settings.NIDConfidenceTreshold = xnode.text().toDouble();
-        else if(xnode.tagName() == "NIDConfidenceFactor")
-            settings.NIDConfidenceFactor = xnode.text().toDouble();
+        else if(xnode.tagName() == "MDAConfidenceFactor")
+            settings.MDAConfidenceFactor = xnode.text().toDouble();
         else if(xnode.tagName() == "PerformMDATest")
             settings.performMDATest = (xnode.text() == "true") ? true : false;
         else if(xnode.tagName() == "InhibitATDCorrection")
@@ -75,8 +75,8 @@ bool writeSettingsXml(QFile &file, const Settings& settings)
     xnode.appendChild(document.createTextNode(QString::number(settings.NIDConfidenceTreshold)));
     xroot.appendChild(xnode);
 
-    xnode = document.createElement("NIDConfidenceFactor");
-    xnode.appendChild(document.createTextNode(QString::number(settings.NIDConfidenceFactor)));
+    xnode = document.createElement("MDAConfidenceFactor");
+    xnode.appendChild(document.createTextNode(QString::number(settings.MDAConfidenceFactor)));
     xroot.appendChild(xnode);
 
     xnode = document.createElement("PerformMDATest");
@@ -221,6 +221,7 @@ bool readDetectorXml(QFile& file, QList<Detector>& detectors)
         detector.presetType1Value = xdetector.attribute("PresetType1Value").toDouble();
         detector.presetType2 = xdetector.attribute("PresetType2");
         detector.presetType2Value = xdetector.attribute("PresetType2Value").toDouble();
+        detector.presetType2Unit = xdetector.attribute("PresetType2Unit");
         detector.randomError = xdetector.attribute("RandomError").toDouble();
         detector.systematicError = xdetector.attribute("SystematicError").toDouble();
         detector.spectrumCounter = xdetector.attribute("SpectrumCounter").toInt();        
@@ -272,6 +273,7 @@ bool writeDetectorXml(QFile& file, const QList<Detector>& detectors)
         xdetector.setAttribute("PresetType1Value", detectors[i].presetType1Value);
         xdetector.setAttribute("PresetType2", detectors[i].presetType2);
         xdetector.setAttribute("PresetType2Value", detectors[i].presetType2Value);
+        xdetector.setAttribute("PresetType2Unit", detectors[i].presetType2Unit);
         xdetector.setAttribute("RandomError", detectors[i].randomError);
         xdetector.setAttribute("SystematicError", detectors[i].systematicError);
         xdetector.setAttribute("SpectrumCounter", detectors[i].spectrumCounter);        

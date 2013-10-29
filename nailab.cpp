@@ -187,6 +187,11 @@ void Nailab::configureWidgets()
     toolGroups[ui.tabAdminDetectors]->addAction(ui.actionNewDetector);
 
     // Static menus
+    QMenu* menu = new QMenu("File");
+    menu->insertAction(NULL, ui.actionExit);
+    menu->insertAction(ui.actionExit, ui.actionAdmin);
+    ui.menubar->insertMenu(NULL, menu);
+
     QStringList items;
     items << "" << tr("LINEAR") << tr("STEP");
     ui.cboxAdminDetectorContinuumFunction->addItems(items);
@@ -194,16 +199,21 @@ void Nailab::configureWidgets()
     items << "" << tr("LINEAR") << tr("DUAL") << tr("EMP") << tr("INTERP");
     ui.cboxAdminDetectorEfficiencyCalibrationType->addItems(items);
     items.clear();
-    items << "" << tr("HEADER");
+    items << tr("ALL");
     ui.cboxAdminGeneralSectionName->addItems(items);
+    ui.cboxAdminGeneralSectionName->setDisabled(true); // FIXME: Deactivated because there is only one item
     items.clear();
-    items << "" << tr("NONE") << tr("AREA") << tr("INTEGRAL") << tr("COUNT");
+    items << "" << tr("AREA") << tr("INTEGRAL") << tr("COUNT");
     ui.cboxAdminDetectorPresetType1->addItems(items);
     ui.cboxInputSamplePresetType1->addItems(items);
     items.clear();
-    items << "" << tr("NONE") << tr("REALTIME") << tr("LIVETIME");
+    items << "" << tr("REALTIME") << tr("LIVETIME");
     ui.cboxAdminDetectorPresetType2->addItems(items);
-    ui.cboxInputSamplePresetType2->addItems(items);
+    ui.cboxInputSamplePresetType2->addItems(items);    
+    items.clear();
+    items << tr("SECONDS") << tr("MINUTES") << tr("HOURS");
+    ui.cboxAdminDetectorPresetType2Unit->addItems(items);
+    ui.cboxInputSamplePresetType2Unit->addItems(items);
 
     QStringList quantityUnitList;
     readQuantityUnitsXml(envQuantityUnitFile, quantityUnitList);
@@ -234,7 +244,7 @@ void Nailab::updateSettings()
     ui.tbAdminGeneralGenieFolder->setText(settings.genieFolder);    
     ui.tbAdminGeneralNIDLibrary->setText(settings.NIDLibrary);
     ui.tbAdminGeneralNIDConfidenceTreshold->setText(QString::number(settings.NIDConfidenceTreshold));
-    ui.tbAdminGeneralNIDConfidenceFactor->setText(QString::number(settings.NIDConfidenceFactor));
+    ui.tbAdminGeneralMDAConfidenceFactor->setText(QString::number(settings.MDAConfidenceFactor));
     ui.cbAdminGeneralPerformMDATest->setChecked(settings.performMDATest);
     ui.cbAdminGeneralInhibitATDCorrection->setChecked(settings.inhibitATDCorrection);
     ui.cbAdminGeneralUseStoredLibrary->setChecked(settings.useStoredLibrary);
@@ -403,7 +413,7 @@ bool Nailab::startJob(SampleInput& sampleInput)
 
     stream << "peak_dif det:" << sampleInput.detector << " /channels=1,1024 /signif=3.00 /ftol=0.2";
 
-    //stream << "pars /PRUSESTRLIB=" << (settings.useStoredLibrary ? "1" : "0") << " /MDACONFID=" << settings.NIDConfidenceFactor << "\n";
+    //stream << "pars /PRUSESTRLIB=" << (settings.useStoredLibrary ? "1" : "0") << " /MDACONFID=" << settings.MDAConfidenceFactor << "\n";
 
     // nid_intf
     /*
@@ -471,7 +481,7 @@ void Nailab::onDetectorSelect(QListWidgetItem *item)
 
         ui.tbInputSampleCollector->setText(username);
         ui.tbInputSampleSpecterRef->setText(QString::number(det->spectrumCounter));
-        ui.cbInputSampleGeometry->clear();
+        ui.cbInputSampleGeometry->clear();        
         ui.cbInputSampleGeometry->addItems(det->beakers.keys());
         ui.cboxInputSamplePresetType1->setCurrentText(det->presetType1);
         ui.tbInputSamplePresetType1->setText(QString::number(det->presetType1Value));
@@ -511,7 +521,7 @@ void Nailab::onAdminGeneralAccepted()
     settings.genieFolder = ui.tbAdminGeneralGenieFolder->text();    
     settings.NIDLibrary = ui.tbAdminGeneralNIDLibrary->text();
     settings.NIDConfidenceTreshold = ui.tbAdminGeneralNIDConfidenceTreshold->text().toDouble();
-    settings.NIDConfidenceFactor = ui.tbAdminGeneralNIDConfidenceFactor->text().toDouble();
+    settings.MDAConfidenceFactor = ui.tbAdminGeneralMDAConfidenceFactor->text().toDouble();
     settings.performMDATest = ui.cbAdminGeneralPerformMDATest->isChecked();
     settings.inhibitATDCorrection = ui.cbAdminGeneralInhibitATDCorrection->isChecked();
     settings.useStoredLibrary = ui.cbAdminGeneralUseStoredLibrary->isChecked();
@@ -589,6 +599,7 @@ void Nailab::onNewDetectorAccepted()
     detector.presetType1Value = dlgNewDetector->presetType1Value();
     detector.presetType2 = dlgNewDetector->presetType2();
     detector.presetType2Value = dlgNewDetector->presetType2Value();
+    detector.presetType2Unit = dlgNewDetector->presetType2Unit();
     detector.randomError = dlgNewDetector->randomError();
     detector.systematicError = dlgNewDetector->systematicError();
     detector.spectrumCounter = 0;
@@ -668,6 +679,7 @@ void Nailab::onAdminDetectorsAccepted()
     detector->presetType1Value = ui.tbAdminDetectorPresetType1Value->text().toDouble();
     detector->presetType2 = ui.cboxAdminDetectorPresetType2->currentText();
     detector->presetType2Value = ui.tbAdminDetectorPresetType2Value->text().toDouble();
+    detector->presetType2Unit = ui.cboxAdminDetectorPresetType2Unit->currentText();
     detector->randomError = ui.tbAdminDetectorRandomError->text().toDouble();
     detector->systematicError = ui.tbAdminDetectorSystematicError->text().toDouble();
 
@@ -729,6 +741,7 @@ void Nailab::onLvAdminDetectorsCurrentItemChanged(QListWidgetItem *current, QLis
     ui.tbAdminDetectorPresetType1Value->setText(QString::number(detector->presetType1Value));
     ui.cboxAdminDetectorPresetType2->setCurrentText(detector->presetType2);
     ui.tbAdminDetectorPresetType2Value->setText(QString::number(detector->presetType2Value));
+    ui.cboxAdminDetectorPresetType2Unit->setCurrentText(detector->presetType2Unit);
     ui.tbAdminDetectorRandomError->setText(QString::number(detector->randomError));
     ui.tbAdminDetectorSystematicError->setText(QString::number(detector->systematicError));
 
@@ -740,7 +753,7 @@ void Nailab::showBeakersForDetector(Detector *detector)
     for(int i=0; i<ui.twAdminDetectorBeaker->rowCount(); i++)
         ui.twAdminDetectorBeaker->removeRow(i);
 
-    ui.twAdminDetectorBeaker->setRowCount(detector->beakers.count());
+    ui.twAdminDetectorBeaker->setRowCount(detector->beakers.count());    
 
     QMapIterator<QString, QString> iter(detector->beakers);
     int i = 0;

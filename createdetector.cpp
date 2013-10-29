@@ -19,6 +19,9 @@ CreateDetector::CreateDetector(QWidget *parent) :
     items.clear();
     items << "" << tr("NONE") << tr("REALTIME") << tr("LIVETIME");
     ui->cboxPresetType2->addItems(items);
+    items.clear();
+    items << "" << tr("SECONDS") << tr("MINUTES") << tr("HOURS");
+    ui->cboxPresetType2Unit->addItems(items);
 }
 
 CreateDetector::~CreateDetector()
@@ -154,6 +157,11 @@ QString CreateDetector::presetType2() const
 double CreateDetector::presetType2Value() const
 {
     return ui->tbPresetType2->text().toDouble();
+}
+
+QString CreateDetector::presetType2Unit() const
+{
+    return ui->cboxPresetType2Unit->currentText();
 }
 
 double CreateDetector::randomError() const

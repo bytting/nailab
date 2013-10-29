@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>435</width>
-    <height>826</height>
+    <height>794</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -71,6 +71,16 @@
    <item row="3" column="1">
     <widget class="QLineEdit" name="tbSearchRegionStart"/>
    </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_24">
+     <property name="text">
+      <string>Search region end</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QLineEdit" name="tbSearchRegionEnd"/>
+   </item>
    <item row="5" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
@@ -113,6 +123,16 @@
    </item>
    <item row="8" column="1">
     <widget class="QLineEdit" name="tbPeakAreaRegionStart"/>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="label_23">
+     <property name="text">
+      <string>Peak area region end</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <widget class="QLineEdit" name="tbPeakAreaRegionEnd"/>
    </item>
    <item row="10" column="0">
     <widget class="QLabel" name="label_4">
@@ -286,39 +306,56 @@
     </widget>
    </item>
    <item row="23" column="1">
-    <widget class="QComboBox" name="cboxPresetType1"/>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QComboBox" name="cboxPresetType1"/>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="tbPresetType1"/>
+     </item>
+    </layout>
    </item>
    <item row="24" column="0">
-    <widget class="QLabel" name="label_18">
-     <property name="text">
-      <string>Preset type 1 value</string>
-     </property>
-    </widget>
-   </item>
-   <item row="24" column="1">
-    <widget class="QLineEdit" name="tbPresetType1"/>
-   </item>
-   <item row="25" column="0">
     <widget class="QLabel" name="label_22">
      <property name="text">
       <string>Preset type 2</string>
      </property>
     </widget>
    </item>
+   <item row="24" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QComboBox" name="cboxPresetType2"/>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="tbPresetType2"/>
+     </item>
+     <item>
+      <widget class="QComboBox" name="cboxPresetType2Unit"/>
+     </item>
+    </layout>
+   </item>
+   <item row="25" column="0">
+    <widget class="QLabel" name="label_20">
+     <property name="text">
+      <string>Random error</string>
+     </property>
+    </widget>
+   </item>
    <item row="25" column="1">
-    <widget class="QComboBox" name="cboxPresetType2"/>
+    <widget class="QLineEdit" name="tbRandomError"/>
    </item>
    <item row="26" column="0">
-    <widget class="QLabel" name="label_19">
+    <widget class="QLabel" name="label_21">
      <property name="text">
-      <string>Preset type 2 value</string>
+      <string>Systematic error</string>
      </property>
     </widget>
    </item>
    <item row="26" column="1">
-    <widget class="QLineEdit" name="tbPresetType2"/>
+    <widget class="QLineEdit" name="tbSystematicError"/>
    </item>
-   <item row="29" column="0">
+   <item row="27" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -331,7 +368,7 @@
      </property>
     </spacer>
    </item>
-   <item row="30" column="0" colspan="2">
+   <item row="28" column="0" colspan="2">
     <layout class="QHBoxLayout">
      <property name="spacing">
       <number>6</number>
@@ -376,46 +413,6 @@
       </widget>
      </item>
     </layout>
-   </item>
-   <item row="27" column="0">
-    <widget class="QLabel" name="label_20">
-     <property name="text">
-      <string>Random error</string>
-     </property>
-    </widget>
-   </item>
-   <item row="27" column="1">
-    <widget class="QLineEdit" name="tbRandomError"/>
-   </item>
-   <item row="28" column="0">
-    <widget class="QLabel" name="label_21">
-     <property name="text">
-      <string>Systematic error</string>
-     </property>
-    </widget>
-   </item>
-   <item row="28" column="1">
-    <widget class="QLineEdit" name="tbSystematicError"/>
-   </item>
-   <item row="9" column="1">
-    <widget class="QLineEdit" name="tbPeakAreaRegionEnd"/>
-   </item>
-   <item row="9" column="0">
-    <widget class="QLabel" name="label_23">
-     <property name="text">
-      <string>Peak area region end</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1">
-    <widget class="QLineEdit" name="tbSearchRegionEnd"/>
-   </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label_24">
-     <property name="text">
-      <string>Search region end</string>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>
