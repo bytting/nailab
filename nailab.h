@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QDir>
 #include <QFile>
+#include <QTextStream>
 #include <QMap>
 #include <QList>
 #include <QString>
@@ -70,6 +71,11 @@ private:
     bool validateSampleInput();
     void storeSampleInput(SampleInput& sampleInput);
     bool startJob(SampleInput& sampleInput);
+    void startJobCommand(QTextStream& s, const QString& cmd);
+    void endJobCommand(QTextStream& s);
+    void addJobParam(QTextStream& s, const QString& p, const QString& v);
+    void addJobParamSingle(QTextStream& s, const QString& v);
+    void addJobParamQuoted(QTextStream& s, const QString& p, const QString& v);
 
 private slots:
 
@@ -101,6 +107,8 @@ private slots:
     void onBrowseTemplateName();
     void onBrowseNIDLibrary();
     void onBrowseGenieFolder();
+    void onBrowseNAIImport();
+    void onBrowseRPTExport();
 
     void onInputSampleAccepted();
     void onAddDetectorBeaker();    

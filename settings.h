@@ -9,6 +9,8 @@ struct Settings
     QString templateName;
     QString sectionName;
     double errorMultiplier;
+    QString NAIImportFolder;
+    QString RPTExportFolder;
 };
 
 #endif // SETTINGS_H

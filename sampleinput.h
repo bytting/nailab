@@ -21,6 +21,12 @@ struct SampleInput
     QString endTime;
     QString randomError;
     QString systematicError;
+    QString presetType1;
+    QString presetType1Value;
+    QString presetType1StartChannel;
+    QString presetType1EndChannel;
+    QString presetType2;
+    QString presetType2Value;
 };
 
 #endif // SAMPLEINPUT_H

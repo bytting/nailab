@@ -1,8 +1,6 @@
 #include <QStringList>
 #include <QApplication>
 #include <QMessageBox>
-#include <QFile>
-#include <QTextStream>
 #include <QPushButton>
 #include <QDir>
 #include <QFileDialog>
@@ -193,10 +191,10 @@ void Nailab::configureWidgets()
     ui.menubar->insertMenu(NULL, menu);
 
     QStringList items;
-    items << "" << tr("LINEAR") << tr("STEP");
+    items << tr("STEP") << tr("LINEAR");
     ui.cboxAdminDetectorContinuumFunction->addItems(items);
     items.clear();
-    items << "" << tr("LINEAR") << tr("DUAL") << tr("EMP") << tr("INTERP");
+    items << tr("INTERP") << tr("LINEAR") << tr("DUAL") << tr("EMP");
     ui.cboxAdminDetectorEfficiencyCalibrationType->addItems(items);
     items.clear();
     items << tr("ALL");
@@ -245,6 +243,8 @@ void Nailab::updateSettings()
     ui.tbAdminGeneralTemplateName->setText(settings.templateName);
     ui.cboxAdminGeneralSectionName->setCurrentText(settings.sectionName);
     ui.tbAdminGeneralErrorMultiplier->setText(QString::number(settings.errorMultiplier));
+    ui.tbAdminGeneralNAIImport->setText(settings.NAIImportFolder);
+    ui.tbAdminGeneralRPTExport->setText(settings.RPTExportFolder);
 }
 
 void Nailab::updateBeakerViews()
@@ -290,7 +290,7 @@ void Nailab::updateDetectorViews()
         }
         else
         {
-            /*if(mca::isBusy(detector.name, status) == mca::SUCCESS) // TODO
+            /*if(mca::isBusy(detector.name, status) == mca::SUCCESS) // FIXME
             {
                 if(status)
                     disableListWidgetItem(item);
@@ -354,8 +354,12 @@ void Nailab::storeSampleInput(SampleInput& sampleInput)
     }
     sampleInput.randomError = ui.tbInputSampleRandomError->text();
     sampleInput.systematicError = ui.tbInputSampleSystematicError->text();
-
-    // FIXME: Not finished
+    sampleInput.presetType1 = ui.cboxInputSamplePresetType1->currentText();
+    sampleInput.presetType1Value = ui.tbInputSamplePresetType1->text();
+    sampleInput.presetType1StartChannel = ui.tbInputSampleStartChannel->text();
+    sampleInput.presetType1EndChannel = ui.tbInputSampleEndChannel->text();
+    sampleInput.presetType2 = ui.cboxInputSamplePresetType2->currentText();
+    sampleInput.presetType2Value = ui.tbInputSamplePresetType2->text();
 }
 
 bool Nailab::startJob(SampleInput& sampleInput)
@@ -368,62 +372,194 @@ bool Nailab::startJob(SampleInput& sampleInput)
     }
     QTextStream stream(&jobfile);    
 
-    // pars
-    stream << "pars det:" << sampleInput.detector << " /stitle=\"" << sampleInput.title << "\" /scollname=\"" << username << "\" /sdesc1=\"" << sampleInput.description
-           << "\" /sdesc4=\"" << sampleInput.specterref << "\" /sident=\"" << sampleInput.ID << "\" /stype=\"" << sampleInput.type << "\" /squant=\"" << sampleInput.quantity
-           << "\" /squanterr=\"" << sampleInput.quantityError << "\" /sunits=\"" << sampleInput.units << "\" /sgeometry=\"" << sampleInput.geometry << "\" /builduptype=\""
-           << sampleInput.builduptype << "\" /stime=\"" << sampleInput.startTime << "\"\n"; // FIXME: End time
-
-    stream << "pars det:" << sampleInput.detector << " /ssyserr=" << sampleInput.randomError << " /ssysterr=" << sampleInput.systematicError << "\n";
-
     Detector* detector = getDetectorByName(sampleInput.detector);
+    QString specname = detector->name + "-" + QString::number(detector->spectrumCounter + 1);
 
-    stream << "movedata det:" << sampleInput.detector << " \"" << detector->beakers[sampleInput.geometry] << "\" /effcal /overwrite\n";
+    startJobCommand(stream, "pars");
+    addJobParam(stream, "det:", sampleInput.detector);
+    addJobParamQuoted(stream, "/stitle=", sampleInput.title);
+    addJobParamQuoted(stream, "/scollname=", username);
+    addJobParamQuoted(stream, "/sdesc1=", sampleInput.description);
+    addJobParamQuoted(stream, "/sdesc4=", sampleInput.specterref);
+    addJobParamQuoted(stream, "/sident=", sampleInput.ID);
+    addJobParamQuoted(stream, "/stype=", sampleInput.type);
+    addJobParam(stream, "/squant=", sampleInput.quantity);
+    addJobParam(stream, "/squanterr=", sampleInput.quantityError);
+    addJobParamQuoted(stream, "/sunits=", sampleInput.units);
+    addJobParamQuoted(stream, "/sgeomtry=", sampleInput.geometry);
+    addJobParamQuoted(stream, "/builduptype=", sampleInput.builduptype);    
+    addJobParamQuoted(stream, "/stime=", sampleInput.startTime);
+    if(sampleInput.builduptype == "IRRAD" || sampleInput.builduptype == "DEPOSIT")
+        addJobParamQuoted(stream, "/sdeposit=", sampleInput.endTime);
+    endJobCommand(stream);
 
-    // startmca
-    stream << "startmca det:" << sampleInput.detector << " ";
+    startJobCommand(stream, "pars");
+    addJobParam(stream, "det:", sampleInput.detector);
+    addJobParam(stream, "/ssyserr=", sampleInput.randomError);
+    addJobParam(stream, "/ssysterr=", sampleInput.systematicError);
+    endJobCommand(stream);    
+
+    startJobCommand(stream, "movedata");    
+    addJobParamQuoted(stream, "", QDir::toNativeSeparators(detector->beakers[sampleInput.geometry]));
+    addJobParam(stream, "det:", sampleInput.detector);
+    addJobParamSingle(stream, "/effcal");
+    addJobParamSingle(stream, "/overwrite");
+    endJobCommand(stream);
+
+    startJobCommand(stream, "startmca");
+    addJobParam(stream, "det:", sampleInput.detector);
 
     QString presetType = "";
-    if(ui.cboxInputSamplePresetType1->currentText() == "AREA")
+    if(sampleInput.presetType1 == "AREA")
         presetType = "/AREAPRESET=";
-    else if(ui.cboxInputSamplePresetType1->currentText() == "INTEGRAL")
+    else if(sampleInput.presetType1 == "INTEGRAL")
         presetType = "/INTPRESET=";
-    else if(ui.cboxInputSamplePresetType1->currentText() == "COUNT")
-        presetType = "/CNTSPRESET=";
+    else if(sampleInput.presetType1 == "COUNT")
+        presetType = "/CNTSPRESET=";        
 
     if(!presetType.isEmpty())
-        stream << presetType << ui.tbInputSamplePresetType1->text() << "," << "0" << "," << "512" << " "; // FIXME: Get channels from mcalib
+        addJobParam(stream, presetType, sampleInput.presetType1Value + "," +
+                    sampleInput.presetType1StartChannel + "," + sampleInput.presetType1EndChannel);
 
     presetType = "";
-    if(ui.cboxInputSamplePresetType2->currentText() == "REALTIME")
-        presetType = "/REALTIME=";
-    else if(ui.cboxInputSamplePresetType2->currentText() == "LIVETIME")
-        presetType = "/LIVETIME=";
+    if(sampleInput.presetType2 == "REALTIME")
+        presetType = "/REALPRESET=";
+    else if(sampleInput.presetType2 == "LIVETIME")
+        presetType = "/LIVEPRESET=";
 
     if(!presetType.isEmpty())
-        stream << presetType << ui.tbInputSamplePresetType2->text();
+        addJobParam(stream, presetType, sampleInput.presetType2Value);
 
-    stream << "\nwait det:" << sampleInput.detector << " /acq\n";
+    endJobCommand(stream);
 
-    stream << "peak_dif det:" << sampleInput.detector << " /channels=1,1024 /signif=3.00 /ftol=0.2";
+    startJobCommand(stream, "wait");
+    addJobParam(stream, "det:", sampleInput.detector);
+    addJobParamSingle(stream, "/acq");
+    endJobCommand(stream);    
 
-    //stream << "pars /PRUSESTRLIB=" << (settings.useStoredLibrary ? "1" : "0") << " /MDACONFID=" << settings.MDAConfidenceFactor << "\n";
+    startJobCommand(stream, "peak_dif");
+    addJobParam(stream, "det:", sampleInput.detector);
+    addJobParam(stream, "/channels=", QString::number(detector->searchRegionStart) + "," + QString::number(detector->searchRegionEnd));
+    addJobParam(stream, "/signif=", QString::number(detector->significanceTreshold));
+    addJobParam(stream, "/ftol=", QString::number(detector->tolerance));
+    endJobCommand(stream);    
 
-    // nid_intf
-    /*
-    stream << "nid_intf /LIBRARY=\"" << settings.NIDLibrary << "\" /CONFID=" << settings.NIDConfidenceTreshold;
-    if(settings.performMDATest)
-        stream << " /MDA_TEST";
-    if(settings.inhibitATDCorrection)
-        stream << " /NOACQDECAY";
-    stream << "\n";    
-    */
+    startJobCommand(stream, "area_nl1");
+    addJobParam(stream, "det:", sampleInput.detector);    
+    addJobParam(stream, "/channels=", QString::number(detector->peakAreaRegionStart) + "," + QString::number(detector->peakAreaRegionEnd));
+    addJobParam(stream, "/fcont=", QString::number(detector->continuum));
+    if(detector->criticalLevelTest)
+        addJobParamSingle(stream, "/critlevel");
+    if(detector->useFixedFWHM)
+        addJobParamSingle(stream, "/fixfwhm");
+    if(detector->useFixedTailParameter)
+        addJobParamSingle(stream, "/fixtail");
+    if(detector->fitSinglets)
+        addJobParamSingle(stream, "/fit");
+    if(detector->displayROIs)
+        addJobParamSingle(stream, "/display_rois");
+    endJobCommand(stream);
 
-    // FIXME: Not finished
-    jobfile.close();
+    startJobCommand(stream, "pars");
+    addJobParam(stream, "det:", sampleInput.detector);
+    addJobParam(stream, "/roipsbtyp=", detector->continuumFunction);
+    addJobParam(stream, "/prreject0pks=", detector->rejectZeroAreaPeaks ? "1" : "0");
+    addJobParam(stream, "/prfwhmpkmult=", QString::number(detector->maxFWHMsBetweenPeaks));
+    addJobParam(stream, "/prfwhmpkleft=", QString::number(detector->maxFWHMsForLeftLimit));
+    addJobParam(stream, "/prfwhmpkrght=", QString::number(detector->maxFWHMsForRightLimit));
+    endJobCommand(stream);
 
-    // FIXME: Update spectrum counter
+    startJobCommand(stream, "areacor");
+    addJobParam(stream, "det:", sampleInput.detector);
+    addJobParamQuoted(stream, "/bkgnd=", QDir::toNativeSeparators(detector->backgroundSubtract));
+    endJobCommand(stream);
+
+    startJobCommand(stream, "effcor");
+    addJobParam(stream, "det:", sampleInput.detector);
+    addJobParamSingle(stream, "/" + detector->efficiencyCalibrationType);
+    endJobCommand(stream);
+
+    startJobCommand(stream, "nid_intf");
+    addJobParam(stream, "det:", sampleInput.detector);
+    addJobParamQuoted(stream, "/LIBRARY=", QDir::toNativeSeparators(detector->NIDLibrary));
+    addJobParam(stream, "/CONFID=", QString::number(detector->MDAConfidenceFactor));
+    if(detector->performMDATest)
+        addJobParamSingle(stream, "/MDA_TEST");
+    if(detector->inhibitATDCorrection)
+        addJobParamSingle(stream, "/NOACQDECAY");
+    endJobCommand(stream);
+
+    startJobCommand(stream, "pars");
+    addJobParam(stream, "det:", sampleInput.detector);
+    addJobParam(stream, "/PRUSESTRLIB=", detector->useStoredLibrary ? "1" : "0");
+    addJobParam(stream, "/MDACONFID=", QString::number(detector->MDAConfidenceFactor));
+    endJobCommand(stream);
+
+    startJobCommand(stream, "MDA");
+    addJobParam(stream, "det:", sampleInput.detector);
+    endJobCommand(stream);
+
+    startJobCommand(stream, "pars");
+    addJobParam(stream, "det:", sampleInput.detector);
+    addJobParamQuoted(stream, "/activunits=", "Bq");
+    addJobParam(stream, "/ACTIVMULT=", "37000");
+    endJobCommand(stream);
+
+    startJobCommand(stream, "report");
+    addJobParam(stream, "det:", sampleInput.detector);
+    addJobParamQuoted(stream, "/template=", QDir::toNativeSeparators(settings.templateName));
+    addJobParamSingle(stream, "/newfile");
+    addJobParamSingle(stream, "/firstpg");
+    addJobParamSingle(stream, "/newpg");
+    addJobParamQuoted(stream, "/outfile=", QDir::toNativeSeparators(envTempDirectory.absolutePath() + "/") + specname + ".rpt");
+    addJobParamQuoted(stream, "/section=", "");
+    addJobParam(stream, "/EM=", QString::number(settings.errorMultiplier));
+    endJobCommand(stream);
+
+    startJobCommand(stream, "dataplot");
+    addJobParam(stream, "det:", sampleInput.detector);
+    addJobParam(stream, "/scale=", "log");
+    addJobParamSingle(stream, "/enhplot");
+    endJobCommand(stream);
+
+    startJobCommand(stream, "movedata");
+    addJobParam(stream, "det:", sampleInput.detector);
+    addJobParamQuoted(stream, "", QDir::toNativeSeparators(envTempDirectory.absolutePath() + "/") + specname + ".cnf");
+    addJobParamSingle(stream, "/overwrite");
+    endJobCommand(stream);
+
+    startJobCommand(stream, "copy");
+    QString doneFilename = envTempDirectory.path() + "/job-" + sampleInput.detector + ".done";
+    addJobParamSingle(stream, "/y NUL \"" + doneFilename + "\" >NUL");
+    endJobCommand(stream);
+
+    jobfile.close();    
     return true;
+}
+
+void Nailab::startJobCommand(QTextStream& s, const QString& cmd)
+{
+    s << cmd << " ";
+}
+
+void Nailab::endJobCommand(QTextStream& s)
+{
+    s << "\n";
+}
+
+void Nailab::addJobParam(QTextStream& s, const QString& p, const QString& v)
+{
+    s << p << v << " ";
+}
+
+void Nailab::addJobParamSingle(QTextStream& s, const QString& v)
+{
+    s << v << " ";
+}
+
+void Nailab::addJobParamQuoted(QTextStream& s, const QString& p, const QString& v)
+{
+    s << p << "\"" << v << "\" ";
 }
 
 void Nailab::onQuit()
@@ -517,6 +653,8 @@ void Nailab::onAdminGeneralAccepted()
     settings.templateName = ui.tbAdminGeneralTemplateName->text();
     settings.sectionName = ui.cboxAdminGeneralSectionName->currentText();
     settings.errorMultiplier = ui.tbAdminGeneralErrorMultiplier->text().toDouble();
+    settings.NAIImportFolder = ui.tbAdminGeneralNAIImport->text();
+    settings.RPTExportFolder = ui.tbAdminGeneralRPTExport->text();
 
     writeSettingsXml(envSettingsFile, settings);
 }
@@ -586,6 +724,8 @@ void Nailab::onNewDetectorAccepted()
     detector.efficiencyCalibrationType = dlgNewDetector->efficiencyCalibrationType();    
     detector.presetType1 = dlgNewDetector->presetType1();
     detector.presetType1Value = dlgNewDetector->presetType1Value();
+    detector.presetType1ChannelStart = 1; // FIXME
+    detector.presetType1ChannelEnd = 1024; // FIXME
     detector.presetType2 = dlgNewDetector->presetType2();
     detector.presetType2Value = dlgNewDetector->presetType2Value();
     detector.presetType2Unit = dlgNewDetector->presetType2Unit();
@@ -673,6 +813,8 @@ void Nailab::onAdminDetectorsAccepted()
     detector->efficiencyCalibrationType = ui.cboxAdminDetectorEfficiencyCalibrationType->currentText();
     detector->presetType1 = ui.cboxAdminDetectorPresetType1->currentText();
     detector->presetType1Value = ui.tbAdminDetectorPresetType1Value->text().toDouble();
+    detector->presetType1ChannelStart = ui.tbAdminDetectorPresetType1StartChannel->text().toInt();
+    detector->presetType1ChannelEnd = ui.tbAdminDetectorPresetType1EndChannel->text().toInt();
     detector->presetType2 = ui.cboxAdminDetectorPresetType2->currentText();
     detector->presetType2Value = ui.tbAdminDetectorPresetType2Value->text().toDouble();
     detector->presetType2Unit = ui.cboxAdminDetectorPresetType2Unit->currentText();
@@ -741,6 +883,8 @@ void Nailab::onLvAdminDetectorsCurrentItemChanged(QListWidgetItem *current, QLis
     ui.cboxAdminDetectorEfficiencyCalibrationType->setCurrentText(detector->efficiencyCalibrationType);
     ui.cboxAdminDetectorPresetType1->setCurrentText(detector->presetType1);
     ui.tbAdminDetectorPresetType1Value->setText(QString::number(detector->presetType1Value));
+    ui.tbAdminDetectorPresetType1StartChannel->setText(QString::number(detector->presetType1ChannelStart));
+    ui.tbAdminDetectorPresetType1EndChannel->setText(QString::number(detector->presetType1ChannelEnd));
     ui.cboxAdminDetectorPresetType2->setCurrentText(detector->presetType2);
     ui.tbAdminDetectorPresetType2Value->setText(QString::number(detector->presetType2Value));
     ui.cboxAdminDetectorPresetType2Unit->setCurrentText(detector->presetType2Unit);
@@ -805,6 +949,18 @@ void Nailab::onBrowseGenieFolder()
 {
     QString dirname = QFileDialog::getExistingDirectory(this, tr("Select Genie folder"));
     ui.tbAdminGeneralGenieFolder->setText(dirname);
+}
+
+void Nailab::onBrowseNAIImport()
+{
+    QString dirname = QFileDialog::getExistingDirectory(this, tr("Select NAI import folder"));
+    ui.tbAdminGeneralNAIImport->setText(dirname);
+}
+
+void Nailab::onBrowseRPTExport()
+{
+    QString dirname = QFileDialog::getExistingDirectory(this, tr("Select RPT export folder"));
+    ui.tbAdminGeneralRPTExport->setText(dirname);
 }
 
 void Nailab::onInputSampleAccepted()

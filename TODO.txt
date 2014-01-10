@@ -1,4 +1,4 @@
-implementer spektrumcounter (og andre detektor parametere)
+﻿implementer spektrumcounter (og andre detektor parametere)
 legge til detektor parametere under advanced for overstyring
 generere parameter fil for hver analyse
 
@@ -17,3 +17,14 @@ Hardkode
 pars det:det01 /activunits="Bq" /ACTIVMULT=37000
 
 Sample input skal ha tom dropdown for beaker hvis det er mer enn en beaker
+
+Knapp for innlasting av .nai
+Døpe om .nai til .nai.ok
+
+Detector må ha 2 tegn i navn (unik)
+
+sdesc4 er spekter nummer + 1
+
+sdeposit (sample time end) er påkrevet for irrad og deposit. Skal ikke være med for none
+
+CONFID må være [0.1, 1]

@@ -32,6 +32,8 @@ struct Detector
     QString presetType1;
     QString presetType2;
     double presetType1Value;    
+    int presetType1ChannelStart;
+    int presetType1ChannelEnd;
     double presetType2Value;
     QString presetType2Unit;
     double randomError;

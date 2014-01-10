@@ -41,6 +41,10 @@ bool readSettingsXml(QFile &file, Settings& settings)
             settings.sectionName = xnode.text();
         else if(xnode.tagName() == "ErrorMultiplier")
             settings.errorMultiplier = xnode.text().toDouble();
+        else if(xnode.tagName() == "NAIImportFolder")
+            settings.NAIImportFolder = xnode.text();
+        else if(xnode.tagName() == "RPTExportFolder")
+            settings.RPTExportFolder = xnode.text();
     }
     return true;
 }
@@ -65,6 +69,14 @@ bool writeSettingsXml(QFile &file, const Settings& settings)
 
     xnode = document.createElement("ErrorMultiplier");
     xnode.appendChild(document.createTextNode(QString::number(settings.errorMultiplier)));
+    xroot.appendChild(xnode);
+
+    xnode = document.createElement("NAIImportFolder");
+    xnode.appendChild(document.createTextNode(settings.NAIImportFolder));
+    xroot.appendChild(xnode);
+
+    xnode = document.createElement("RPTExportFolder");
+    xnode.appendChild(document.createTextNode(settings.RPTExportFolder));
     xroot.appendChild(xnode);
 
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -183,6 +195,8 @@ bool readDetectorXml(QFile& file, QList<Detector>& detectors)
         detector.efficiencyCalibrationType = xdetector.attribute("EfficiencyCalibrationType");
         detector.presetType1 = xdetector.attribute("PresetType1");
         detector.presetType1Value = xdetector.attribute("PresetType1Value").toDouble();
+        detector.presetType1ChannelStart = xdetector.attribute("PresetType1ChannelStart").toInt();
+        detector.presetType1ChannelEnd = xdetector.attribute("PresetType1ChannelEnd").toInt();
         detector.presetType2 = xdetector.attribute("PresetType2");
         detector.presetType2Value = xdetector.attribute("PresetType2Value").toDouble();
         detector.presetType2Unit = xdetector.attribute("PresetType2Unit");
@@ -242,6 +256,8 @@ bool writeDetectorXml(QFile& file, const QList<Detector>& detectors)
         xdetector.setAttribute("EfficiencyCalibrationType", detectors[i].efficiencyCalibrationType);
         xdetector.setAttribute("PresetType1", detectors[i].presetType1);
         xdetector.setAttribute("PresetType1Value", detectors[i].presetType1Value);
+        xdetector.setAttribute("PresetType1ChannelStart", detectors[i].presetType1ChannelStart);
+        xdetector.setAttribute("PresetType1ChannelEnd", detectors[i].presetType1ChannelEnd);
         xdetector.setAttribute("PresetType2", detectors[i].presetType2);
         xdetector.setAttribute("PresetType2Value", detectors[i].presetType2Value);
         xdetector.setAttribute("PresetType2Unit", detectors[i].presetType2Unit);
