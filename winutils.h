@@ -7,4 +7,6 @@
 bool readGenieDetectorConfig(QList<QString>& mcaList);
 bool getWindowsUsername(QString& username);
 
+bool runJob(const QString& cmd);
+
 #endif // WINUTILS_H

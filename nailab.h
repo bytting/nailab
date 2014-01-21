@@ -66,6 +66,7 @@ private:
     void disableListWidgetItem(QListWidgetItem *item);
     Detector* getDetectorByName(const QString& name);
 
+    void updateJobs();
     void showBeakersForDetector(Detector *detector);
 
     bool validateSampleInput();
@@ -76,6 +77,12 @@ private:
     void addJobParam(QTextStream& s, const QString& p, const QString& v);
     void addJobParamSingle(QTextStream& s, const QString& v);
     void addJobParamQuoted(QTextStream& s, const QString& p, const QString& v);
+    bool detectorHasJob(const Detector* det);
+
+    void showJob(const QString& detName);
+    void printJob(const QString& detName);
+    void storeJob(const QString& detName);
+    void rejectJob(const QString& detName);
 
 private slots:
 
@@ -115,6 +122,8 @@ private slots:
     void onDeleteDetectorBeaker();
     void onEditDetectorBeaker();
     void onSampleBeakerChanged(QString beaker);
+
+    void onJobClicked(bool);
 };
 
 #endif // NAILAB_H

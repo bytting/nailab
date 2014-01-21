@@ -16,6 +16,7 @@ bool writeBeakerXml(QFile &file, const QList<Beaker>& beakers);
 
 bool readDetectorXml(QFile &file, QList<Detector>& detectors);
 bool writeDetectorXml(QFile &file, const QList<Detector>& detectors);
+bool updateDetectorSpectrumCounter(QFile& file, Detector* detector);
 
 bool readQuantityUnitsXml(QFile &file, QStringList& units);
 

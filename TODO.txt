@@ -28,3 +28,8 @@ sdesc4 er spekter nummer + 1
 sdeposit (sample time end) er påkrevet for irrad og deposit. Skal ikke være med for none
 
 CONFID må være [0.1, 1]
+
+hdwcheck det:det01 => 0
+
+hvcntl det:det01 /ON
+hvcntl det:det01 /OFF

@@ -34,3 +34,23 @@ bool getWindowsUsername(QString& username)
     username = QString::fromStdWString(std::wstring(uname));
     return true;
 }
+
+bool runJob(const QString& cmd)
+{
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+
+    ZeroMemory( &si, sizeof(si) );
+    si.cb = sizeof(si);
+    si.wShowWindow = 0;
+    ZeroMemory( &pi, sizeof(pi) );
+
+    if(!CreateProcess(NULL, (LPWSTR)cmd.toStdWString().c_str(), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi))
+        return false;
+
+    WaitForSingleObject(pi.hProcess, INFINITE);
+
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+    return true;
+}
