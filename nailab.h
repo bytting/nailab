@@ -11,6 +11,7 @@
 #include <QString>
 #include <QActionGroup>
 #include <QStandardItemModel>
+#include <QTimer>
 #include "ui_nailab.h"
 #include "settings.h"
 #include "createbeaker.h"
@@ -43,6 +44,7 @@ private:
     createdetectorbeaker *dlgNewDetectorBeaker;
     editdetectorbeaker *dlgEditDetectorBeaker;
 
+    QTimer *idleTimer;
     QString username;
     QDir envRootDirectory;
     QDir envConfigurationDirectory, envArchiveDirectory, envTempDirectory, envLibraryDirectory;
@@ -55,10 +57,13 @@ private:
     QList<QString> detectorNames;    
     QListWidgetItem *listItemJobs, *listItemDetectors, *listItemArchive;    
 
+    bool bAdminDetectorsEnabled, bAdminBeakersEnabled;
+
     bool setupEnvironment();
     void setupDialogs();
     bool setupMCA();    
     void configureWidgets();
+    void enableControlTree(QObject *parent, bool enable);
     void updateSettings();
     void updateBeakerViews();
     void updateDetectorViews();
@@ -86,6 +91,7 @@ private:
 
 private slots:
 
+    void onIdle();
     void onQuit();
     void onBack();
     void onAdmin();

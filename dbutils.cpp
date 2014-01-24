@@ -299,7 +299,7 @@ bool writeDetectorXml(QFile& file, const QList<Detector>& detectors)
 }
 
 bool updateDetectorSpectrumCounter(QFile& file, Detector* detector)
-{
+{    
     bool found = false;
     QDomDocument document;
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -320,25 +320,27 @@ bool updateDetectorSpectrumCounter(QFile& file, Detector* detector)
         if(detector->name == xdetector.attribute("Name"))
         {
             xdetector.setAttribute("SpectrumCounter", detector->spectrumCounter + 1);
+            detector->spectrumCounter++;
             found = true;
             break;
         }
-    }
+    }        
 
     if(found)
     {
         if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
         {
             QMessageBox msgBox;
-            msgBox.setText("Unable to open file: " + file.fileName());
+            msgBox.setText("Failed to open file for writing: " + file.fileName());
             msgBox.exec();
             return false;
         }
+
         QTextStream stream(&file);
         stream << document.toString();
         file.close();
-        detector->spectrumCounter++;
     }
+
     return found;
 }
 

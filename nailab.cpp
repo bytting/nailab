@@ -49,7 +49,14 @@ bool Nailab::Initialize()
     updateBeakerViews();
     updateDetectorViews();    
 
-    onPagesChanged(ui.pages->currentIndex());	
+    onPagesChanged(ui.pages->currentIndex());
+
+    bAdminDetectorsEnabled = bAdminBeakersEnabled = true;
+
+    idleTimer = new QTimer();
+    connect(idleTimer, SIGNAL(timeout()), this, SLOT(onIdle()));
+    idleTimer->start(32);
+
     return true;
 }
 
@@ -239,7 +246,17 @@ void Nailab::configureWidgets()
     ui.dtInputSampleDepositBeginDate->setDate(QDate::currentDate());
     ui.dtInputSampleDepositEndDate->setDate(QDate::currentDate());
     ui.dtInputSampleIrradBeginDate->setDate(QDate::currentDate());
-    ui.dtInputSampleIrradEndDate->setDate(QDate::currentDate());
+    ui.dtInputSampleIrradEndDate->setDate(QDate::currentDate());    
+}
+
+void Nailab::enableControlTree(QObject *parent, bool enable)
+{
+    if(parent->isWidgetType())
+    {
+        qobject_cast<QWidget*>(parent)->setEnabled(enable);
+        foreach(QObject *obj, parent->children())
+            enableControlTree(obj, enable);
+    }
 }
 
 void Nailab::updateSettings()
@@ -542,7 +559,7 @@ bool Nailab::startJob(SampleInput& sampleInput)
     jobfile.close();    
 
     //QProcess::startDetached(baseFilename + ".BAT >" + baseFilename + ".OUT " + "2>" + baseFilename + ".ERR");
-    QtConcurrent::run(runJob, baseFilename + ".BAT >" + baseFilename + ".OUT " + "2>" + baseFilename + ".ERR");
+    QtConcurrent::run(runJob, baseFilename + ".BAT >" + baseFilename + ".OUT " + "2>" + baseFilename + ".ERR");    
 
     return true;
 }
@@ -603,12 +620,22 @@ void Nailab::updateJobs()
         detName = detName.left(idx);
         ui.twJobs->setCellWidget(i, 0, new QLabel(detName));
         ui.twJobs->setCellWidget(i, 1, new QLabel("Status..."));
+
         btn = new QPushButton("Show");
         connect(btn, SIGNAL(clicked(bool)), this, SLOT(onJobClicked(bool)));
         ui.twJobs->setCellWidget(i, 2, btn);
-        ui.twJobs->setCellWidget(i, 3, new QPushButton("Print"));
-        ui.twJobs->setCellWidget(i, 4, new QPushButton("Store"));
-        ui.twJobs->setCellWidget(i, 5, new QPushButton("Reject"));
+
+        btn = new QPushButton("Print");
+        connect(btn, SIGNAL(clicked(bool)), this, SLOT(onJobClicked(bool)));
+        ui.twJobs->setCellWidget(i, 3, btn);
+
+        btn = new QPushButton("Store");
+        connect(btn, SIGNAL(clicked(bool)), this, SLOT(onJobClicked(bool)));
+        ui.twJobs->setCellWidget(i, 4, btn);
+
+        btn = new QPushButton("Reject");
+        connect(btn, SIGNAL(clicked(bool)), this, SLOT(onJobClicked(bool)));
+        ui.twJobs->setCellWidget(i, 5, btn);
     }
 
     /*ui.twJobs->setColumnWidth(0, 220);
@@ -656,18 +683,17 @@ void Nailab::printJob(const QString& detName)
 
     jobfile.close();
 
-    QtConcurrent::run(runJob, baseFilename + ".PNT >" + baseFilename + ".OUT " + "2>" + baseFilename + ".ERR");
+    QtConcurrent::run(runJob, baseFilename + ".PNT");
 }
 
 void Nailab::storeJob(const QString& detName)
 {
     Detector* det = getDetectorByName(detName);
-    int specnum = updateDetectorSpectrumCounter(envDetectorFile, det);
+    if(!updateDetectorSpectrumCounter(envDetectorFile, det))
+        return; // FIXME
     QDate date = QDate::currentDate();
-    int iyear = date.year() % 1000;
-    //QString year = QString("%1").arg(iyear, 2, 10, '0');
-    QString fname;
-    fname.sprintf("%s%.2d%.4d", detName, iyear, specnum);
+    int iyear = date.year() % 1000;    
+    QString fname = QString("%1%2%3").arg(detName).arg(iyear, 2, 10, QChar('0')).arg(det->spectrumCounter, 4, 10, QChar('0'));
 
     QString baseFilename = QDir::toNativeSeparators(envTempDirectory.path() + "/JOB-" + detName).toUpper();
     QString reportFilename = baseFilename + ".RPT";
@@ -696,7 +722,29 @@ void Nailab::storeJob(const QString& detName)
 
 void Nailab::rejectJob(const QString& detName)
 {
+    QString baseFilename = QDir::toNativeSeparators(envTempDirectory.path() + "/JOB-" + detName).toUpper();
+    QString reportFilename = baseFilename + ".RPT";
+    QString batchFilename = baseFilename + ".BAT";
+    QString outFilename = baseFilename + ".OUT";
+    QString errFilename = baseFilename + ".ERR";
+    QString specFilename = baseFilename + ".CNF";
+    QString doneFilename = baseFilename + ".DONE";
+    QString printFilename = baseFilename + ".PNT";
 
+    if(QFile::exists(reportFilename))
+        QFile::remove(reportFilename);
+    if(QFile::exists(batchFilename))
+        QFile::remove(batchFilename);
+    if(QFile::exists(outFilename))
+        QFile::remove(outFilename);
+    if(QFile::exists(errFilename))
+        QFile::remove(errFilename);
+    if(QFile::exists(specFilename))
+        QFile::remove(specFilename);
+    if(QFile::exists(doneFilename))
+        QFile::remove(doneFilename);
+    if(QFile::exists(printFilename))
+        QFile::remove(printFilename);
 }
 
 void Nailab::showBeakersForDetector(Detector *detector)
@@ -714,6 +762,31 @@ void Nailab::showBeakersForDetector(Detector *detector)
         ui.twAdminDetectorBeaker->setCellWidget(i, 0, new QLabel(iter.key()));
         ui.twAdminDetectorBeaker->setCellWidget(i, 1, new QLabel(iter.value()));
         i++;
+    }
+}
+
+void Nailab::onIdle()
+{
+    if(ui.lvAdminDetectors->selectedItems().count() > 0 && !bAdminDetectorsEnabled)
+    {
+        enableControlTree(ui.tabsAdminDetectors, true);
+        bAdminDetectorsEnabled = true;
+    }
+    else if(ui.lvAdminDetectors->selectedItems().count() <= 0 && bAdminDetectorsEnabled)
+    {
+        enableControlTree(ui.tabsAdminDetectors, false);
+        bAdminDetectorsEnabled = false;
+    }
+
+    if(ui.lvAdminBeakers->selectedItems().count() > 0 && !bAdminBeakersEnabled)
+    {
+        enableControlTree(ui.frameAdminBeakers, true);
+        bAdminBeakersEnabled = true;
+    }
+    else if(ui.lvAdminBeakers->selectedItems().count() <= 0 && bAdminBeakersEnabled)
+    {
+        enableControlTree(ui.frameAdminBeakers, false);
+        bAdminBeakersEnabled = false;
     }
 }
 
@@ -964,7 +1037,7 @@ void Nailab::onEditDetectorBeakerAccepted()
 void Nailab::onAdminDetectorsAccepted()
 {
     if(ui.lvAdminDetectors->selectedItems().count() < 1)
-        return;
+        return;    
 
     QString detectorName = ui.lvAdminDetectors->selectedItems()[0]->text();
     Detector* detector = getDetectorByName(detectorName);
@@ -1014,7 +1087,7 @@ void Nailab::onLvAdminBeakersCurrentItemChanged(QListWidgetItem *current, QListW
     Q_UNUSED(previous);
 
     if(!current)
-        return;    
+        return;                
 
     QString beakerName = current->text();
     ui.lblAdminBeakerBeaker->setText(beakerName);
@@ -1023,7 +1096,7 @@ void Nailab::onLvAdminBeakersCurrentItemChanged(QListWidgetItem *current, QListW
         if(beaker.name == beakerName)
         {
             ui.tbAdminBeakerManufacturer->setText(beaker.manufacturer);
-            ui.cbAdminBeakerEnabled->setChecked(beaker.enabled);
+            ui.cbAdminBeakerEnabled->setChecked(beaker.enabled);            
             break;
         }
     }
@@ -1031,14 +1104,16 @@ void Nailab::onLvAdminBeakersCurrentItemChanged(QListWidgetItem *current, QListW
 
 void Nailab::onLvAdminDetectorsCurrentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
 {
-    Q_UNUSED(previous);
+    Q_UNUSED(previous);        
 
     if(!current)
-        return;    
+        return;        
 
     Detector* detector = getDetectorByName(current->text());
-    ui.lblAdminDetectorDetector->setText(detector->name);
+    if(!detector)
+        return;
 
+    ui.lblAdminDetectorDetector->setText(detector->name);
     ui.cbAdminDetectorInUse->setChecked(detector->inUse);
     ui.tbAdminDetectorSearchRegionStart->setText(QString::number(detector->searchRegionStart));
     ui.tbAdminDetectorSearchRegionEnd->setText(QString::number(detector->searchRegionEnd));
@@ -1257,6 +1332,7 @@ void Nailab::onJobClicked(bool)
                     rejectJob(detectorName);
                     break;
                 }
+                updateJobs();
             }
         }
     }

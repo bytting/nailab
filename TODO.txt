@@ -9,6 +9,10 @@ Legge til /screen og /printer med default.
 Hvis /printer ikke er valgt, skal DATAPLOT fjernes fra script
 
 
+Tømme input felter etter "start"
+Validere alle input felter
+
+
 Dataplot skal ha Scale parameter (LOG/LINEAR) på General
 Dataplot skal ha harkodet parameter /ENHPLOT
 
