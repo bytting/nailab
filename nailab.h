@@ -11,6 +11,7 @@
 #include <QString>
 #include <QActionGroup>
 #include <QStandardItemModel>
+#include <QFileSystemModel>
 #include <QTimer>
 #include "ui_nailab.h"
 #include "settings.h"
@@ -55,7 +56,9 @@ private:
     QList<Beaker> beakers;
     QList<Detector> detectors;
     QList<QString> detectorNames;    
-    QListWidgetItem *listItemJobs, *listItemDetectors, *listItemArchive;    
+    QListWidgetItem *listItemJobs, *listItemDetectors, *listItemArchive;
+
+    QFileSystemModel *modelArchive;
 
     bool bAdminDetectorsEnabled, bAdminBeakersEnabled;
 

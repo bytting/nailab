@@ -203,25 +203,25 @@ void Nailab::configureWidgets()
     ui.menubar->insertMenu(NULL, menu);
 
     QStringList items;
-    items << tr("STEP") << tr("LINEAR");
+    items << "STEP" << "LINEAR";
     ui.cboxAdminDetectorContinuumFunction->addItems(items);
     items.clear();
-    items << tr("INTERP") << tr("LINEAR") << tr("DUAL") << tr("EMP");
+    items << "INTERP" << "LINEAR" << "DUAL" << "EMP";
     ui.cboxAdminDetectorEfficiencyCalibrationType->addItems(items);
     items.clear();
-    items << tr("ALL");
+    items << "ALL";
     ui.cboxAdminGeneralSectionName->addItems(items);
     ui.cboxAdminGeneralSectionName->setDisabled(true); // FIXME: Deactivated because there is only one item
     items.clear();
-    items << "" << tr("AREA") << tr("INTEGRAL") << tr("COUNT");
+    items << "" << "AREA" << "INTEGRAL" << "COUNT";
     ui.cboxAdminDetectorPresetType1->addItems(items);
     ui.cboxInputSamplePresetType1->addItems(items);
     items.clear();
-    items << "" << tr("REALTIME") << tr("LIVETIME");
+    items << "" << "REALTIME" << "LIVETIME";
     ui.cboxAdminDetectorPresetType2->addItems(items);
     ui.cboxInputSamplePresetType2->addItems(items);    
     items.clear();
-    items << tr("SECONDS") << tr("MINUTES") << tr("HOURS");
+    items << "SECONDS" << "MINUTES" << "HOURS";
     ui.cboxAdminDetectorPresetType2Unit->addItems(items);
     ui.cboxInputSamplePresetType2Unit->addItems(items);
 
@@ -240,6 +240,13 @@ void Nailab::configureWidgets()
     listItemArchive = new QListWidgetItem(QIcon(":/Nailab/Resources/archive64.png"), tr("Archive"), ui.lwMenu);
     listItemArchive->setStatusTip(tr("Show file archive"));
     connect(ui.lwMenu, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onMenuSelect(QListWidgetItem*)));
+
+    // Archive
+    modelArchive = new QFileSystemModel(this);
+    modelArchive->setNameFilters(QStringList() << "*.RPT");
+    modelArchive->setNameFilterDisables(false);
+    ui.tvArchive->setModel(modelArchive);
+    ui.tvArchive->setRootIndex(modelArchive->setRootPath(envArchiveDirectory.path()));
 
     // Dates
     ui.dtInputSampleNoneSampleDate->setDate(QDate::currentDate());
@@ -692,7 +699,7 @@ void Nailab::storeJob(const QString& detName)
     if(!updateDetectorSpectrumCounter(envDetectorFile, det))
         return; // FIXME
     QDate date = QDate::currentDate();
-    int iyear = date.year() % 1000;    
+    int iyear = date.year() % 1000;        
     QString fname = QString("%1%2%3").arg(detName).arg(iyear, 2, 10, QChar('0')).arg(det->spectrumCounter, 4, 10, QChar('0'));
 
     QString baseFilename = QDir::toNativeSeparators(envTempDirectory.path() + "/JOB-" + detName).toUpper();
@@ -702,18 +709,27 @@ void Nailab::storeJob(const QString& detName)
     QString errFilename = baseFilename + ".ERR";
     QString specFilename = baseFilename + ".CNF";
     QString doneFilename = baseFilename + ".DONE";
-    QString printFilename = baseFilename + ".PNT";
+    QString printFilename = baseFilename + ".PNT";       
+
+    QString currPath = QDir::toNativeSeparators(envArchiveDirectory.path() + "/" + QString::number(date.year()) + "/" + detName + "/");
+
+    if(!QDir(QDir::toNativeSeparators(envArchiveDirectory.path() + "/" + QString::number(date.year()))).exists())
+        QDir().mkdir(QDir::toNativeSeparators(envArchiveDirectory.path() + "/" + QString::number(date.year())));
+
+    if(!QDir(currPath).exists())
+        QDir().mkdir(currPath);
+
 
     if(QFile::exists(reportFilename))
-        QFile::rename(reportFilename, QDir::toNativeSeparators(envArchiveDirectory.path() + "/" + fname + ".RPT").toUpper());
+        QFile::rename(reportFilename, (currPath + fname + ".RPT").toUpper());
     if(QFile::exists(batchFilename))
-        QFile::rename(batchFilename, QDir::toNativeSeparators(envArchiveDirectory.path() + "/" + fname + ".BAT").toUpper());
+        QFile::rename(batchFilename, (currPath + fname + ".BAT").toUpper());
     if(QFile::exists(outFilename))
-        QFile::rename(outFilename, QDir::toNativeSeparators(envArchiveDirectory.path() + "/" + fname + ".OUT").toUpper());
+        QFile::rename(outFilename, (currPath + fname + ".OUT").toUpper());
     if(QFile::exists(errFilename))
-        QFile::rename(errFilename, QDir::toNativeSeparators(envArchiveDirectory.path() + "/" + fname + ".ERR").toUpper());
+        QFile::rename(errFilename, (currPath + fname + ".ERR").toUpper());
     if(QFile::exists(specFilename))
-        QFile::rename(specFilename, QDir::toNativeSeparators(envArchiveDirectory.path() + "/" + fname + ".CNF").toUpper());
+        QFile::rename(specFilename, (currPath + fname + ".CNF").toUpper());
     if(QFile::exists(doneFilename))
         QFile::remove(doneFilename);
     if(QFile::exists(printFilename))
