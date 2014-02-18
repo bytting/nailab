@@ -11,7 +11,7 @@ bool readGenieDetectorConfig(QList<QString> &mcaList)
     if(!GetComputerName(infoBuf, &bufCharCount))
         return false;
     QString compName = QString::fromStdWString(std::wstring(infoBuf));
-    QString filename = "C:\\GENIE2K\\MIDFILES\\" + compName + ".WSP";
+    QString filename = "C:\\GENIE2K\\MIDFILES\\" + compName + ".WSP"; // FIXME
     if(!QFile::exists(filename))
         return false;
     QFile file(filename);
@@ -40,10 +40,10 @@ bool runJob(const QString& cmd)
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
 
-    ZeroMemory( &si, sizeof(si) );
+    ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
     si.wShowWindow = 0;
-    ZeroMemory( &pi, sizeof(pi) );
+    ZeroMemory(&pi, sizeof(pi));
 
     if(!CreateProcess(NULL, (LPWSTR)cmd.toStdWString().c_str(), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi))
         return false;

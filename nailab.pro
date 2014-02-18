@@ -4,6 +4,8 @@
 #
 #-------------------------------------------------
 
+CONFIG += c++11
+
 QT       += core gui xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -32,7 +34,8 @@ HEADERS  += nailab.h \
     settings.h \
     sampleinput.h \
     createdetectorbeaker.h \
-    editdetectorbeaker.h
+    editdetectorbeaker.h \
+    exceptions.h
 
 FORMS    += nailab.ui \
     createbeaker.ui \

@@ -6,13 +6,15 @@
 #include <QDate>
 #include <QFileDialog>
 #include <QListWidgetItem>
+#include <QTreeWidgetItem>
+#include <QTreeWidgetItemIterator>
 #include <QtConcurrent/QtConcurrent>
 #include <qglobal.h>
 #include "nailab.h"
 #include "dbutils.h"
 #include "winutils.h"
-#include "mcalib.h"
 #include "sampleinput.h"
+#include "exceptions.h"
 
 Nailab::Nailab(QWidget *parent)
     : QMainWindow(parent)
@@ -161,18 +163,20 @@ bool Nailab::setupMCA()
         dlgNewDetector->exec();
     }
 
-    if(mca::initializeVDM() != mca::SUCCESS)
+    try
     {
-        QMessageBox::information(this, tr("Error"), tr("Failed to open connection to VDM"));
+        vdm = VDM::instance();
+        vdm->initialize();
+    }
+    catch(BaseException& ex)
+    {
+        QMessageBox::information(this, tr("Error"), ex.what());
         return false;
     }
 
     for(int i=0; i<detectors.count(); i++)
-    {        
-        int channels;
-        if(mca::maxChannels(detectors[i].name, channels) == mca::SUCCESS)
-            detectors[i].maxChannels = channels;
-        else detectors[i].maxChannels = 1024;
+    {                
+        detectors[i].maxChannels = vdm->maxChannels(detectors[i].name);
     }
 
     return true;
@@ -239,14 +243,23 @@ void Nailab::configureWidgets()
     listItemDetectors->setStatusTip(tr("Available detectors"));
     listItemArchive = new QListWidgetItem(QIcon(":/Nailab/Resources/archive64.png"), tr("Archive"), ui.lwMenu);
     listItemArchive->setStatusTip(tr("Show file archive"));
-    connect(ui.lwMenu, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onMenuSelect(QListWidgetItem*)));
+    connect(ui.lwMenu, SIGNAL(itemClicked(QListWidgetItem*)),
+            this, SLOT(onMenuSelect(QListWidgetItem*)));
 
-    // Archive
+    // Archive view
     modelArchive = new QFileSystemModel(this);
     modelArchive->setNameFilters(QStringList() << "*.RPT");
     modelArchive->setNameFilterDisables(false);
     ui.tvArchive->setModel(modelArchive);
     ui.tvArchive->setRootIndex(modelArchive->setRootPath(envArchiveDirectory.path()));
+
+    // Jobs view
+    modelJobs = new QFileSystemModel(this);
+    modelJobs->setNameFilters(QStringList() << "*.BAT");
+    modelJobs->setNameFilterDisables(false);
+    ui.lvJobs->setModel(modelJobs);
+    ui.lvJobs->setRootIndex(modelJobs->setRootPath(envTempDirectory.path()));
+    connect(ui.lvJobs, SIGNAL(clicked(QModelIndex)), this, SLOT(onJobClicked2(QModelIndex)));
 
     // Dates
     ui.dtInputSampleNoneSampleDate->setDate(QDate::currentDate());
@@ -293,7 +306,7 @@ void Nailab::updateDetectorViews()
     ui.lvAdminDetectors->clear();        
     ui.lwDetectors->clear();
 
-    bool found, status;
+    bool found;
     QListWidgetItem *item = 0;
 
     // Set up admin detector list and detector buttons
@@ -319,12 +332,8 @@ void Nailab::updateDetectorViews()
         }
         else
         {
-            if(mca::isBusy(detector.name, status) == mca::SUCCESS)
-            {
-                if(status)
-                    disableListWidgetItem(item);
-            }
-            else disableListWidgetItem(item);
+            if(vdm->isBusy(detector.name))
+                disableListWidgetItem(item);
         }
     }
     connect(ui.lwDetectors, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onDetectorSelect(QListWidgetItem*)));
@@ -808,7 +817,7 @@ void Nailab::onIdle()
 
 void Nailab::onQuit()
 {
-    mca::closeVDM();
+    vdm->close();
     qApp->quit();
 }
 
@@ -857,18 +866,9 @@ void Nailab::onDetectorSelect(QListWidgetItem *item)
             return;
         }
 
-        bool status;
-        if(mca::hasHighVoltage(det->name, status) == mca::SUCCESS)
+        if(!vdm->hasHighVoltage(det->name))
         {
-            if(!status)
-            {
-                QMessageBox::information(this, tr("Message"), tr("Detector ") + det->name + tr(" is powered off"));
-                return;
-            }
-        }
-        else
-        {
-            QMessageBox::information(this, tr("Error"), tr("Unable to check high voltage for detector"));
+            QMessageBox::information(this, tr("Message"), tr("Detector ") + det->name + tr(" is powered off"));
             return;
         }
 
@@ -1012,10 +1012,7 @@ void Nailab::onNewDetectorAccepted()
     writeDetectorXml(envDetectorFile, detectors);
     updateDetectorViews();
 
-    int channels;
-    if(mca::maxChannels(detector.name, channels) == mca::SUCCESS)
-        detector.maxChannels = channels;
-    else detector.maxChannels = 1024;
+    detector.maxChannels = vdm->maxChannels(detector.name);
 }
 
 void Nailab::onNewDetectorBeakerAccepted()
@@ -1351,5 +1348,28 @@ void Nailab::onJobClicked(bool)
                 updateJobs();
             }
         }
+    }
+}
+
+void Nailab::onJobClicked2(const QModelIndex &index)
+{
+    QString jobFile = modelJobs->filePath(index);
+    QString fname = QFileInfo(jobFile).absolutePath() + "/" + QFileInfo(jobFile).completeBaseName();
+    QString doneFile = QDir::toNativeSeparators(fname + ".DONE");
+    QMessageBox::information(this, tr("Error"), doneFile);
+
+    if(QFile(doneFile).exists())
+    {
+        ui.btnJobShow->setEnabled(true);
+        ui.btnJobPrint->setEnabled(true);
+        ui.btnJobStore->setEnabled(true);
+        ui.btnJobReject->setEnabled(true);
+    }
+    else
+    {
+        ui.btnJobShow->setEnabled(false);
+        ui.btnJobPrint->setEnabled(false);
+        ui.btnJobStore->setEnabled(false);
+        ui.btnJobReject->setEnabled(false);
     }
 }

@@ -8,19 +8,19 @@ CreateDetector::CreateDetector(QWidget *parent) :
     ui->setupUi(this);
 
     QStringList items;
-    items << "" << tr("LINEAR") << tr("STEP");
+    items << "" << "LINEAR" << "STEP";
     ui->cboxContinuumFunction->addItems(items);
     items.clear();
-    items << "" << tr("LINEAR") << tr("DUAL") << tr("EMP") << tr("INTERP");
+    items << "" << "LINEAR" << "DUAL" << "EMP" << "INTERP";
     ui->cboxEfficiencyCalibrationType->addItems(items);
     items.clear();
-    items << "" << tr("NONE") << tr("AREA") << tr("INTEGRAL") << tr("COUNT");
+    items << "" << "NONE" << "AREA" << "INTEGRAL" << "COUNT";
     ui->cboxPresetType1->addItems(items);
     items.clear();
-    items << "" << tr("NONE") << tr("REALTIME") << tr("LIVETIME");
+    items << "" << "NONE" << "REALTIME" << "LIVETIME";
     ui->cboxPresetType2->addItems(items);
     items.clear();
-    items << "" << tr("SECONDS") << tr("MINUTES") << tr("HOURS");
+    items << "" << "SECONDS" << "MINUTES" << "HOURS";
     ui->cboxPresetType2Unit->addItems(items);
 }
 

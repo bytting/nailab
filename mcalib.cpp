@@ -1,6 +1,7 @@
+
+#include "mcalib.h"
 #include <QString>
 #include <QByteArray>
-#include <windows.h>
 #include <citypes.h>
 #include <crackers.h>
 #include <spasst.h>
@@ -10,115 +11,106 @@
 #include <cam_n.h>
 #include <utility.h>
 #include <sad_nest.h>
-#include "mcalib.h"
+#include "exceptions.h"
 
-namespace mca
+VDM* VDM::instance()
 {
+    static VDM vdm;
+    return &vdm;
+}
 
-static HMEM hDSC = NULL;
-static bool hasOpenMCA = false;
-
-StatusCode initializeVDM()
+void VDM::initialize()
 {      
-    if(hDSC) // Exit if already initialized
-        return SUCCESS;
+    if(mHandle) // Exit if already initialized
+        return;
 
     // Initialize Genie 2000 environment
     vG2KEnv();
 
     // Create connection to VDM server
-    if(iUtlCreateFileDSC2(&hDSC, 0, 0))
-        return ERROR_OPEN;
-
-    return SUCCESS;
+    if(iUtlCreateFileDSC2(&mHandle, 0, 0))
+        throw BadException(__FILE__, __FUNCTION__, __LINE__, "Connection to VDM server failed");
 }
 
-void closeVDM()
+void VDM::close()
 {
-    if(hDSC)
-        SadDeleteDSC(hDSC);
-    hDSC = NULL;
+    if(mHandle)
+        SadDeleteDSC(mHandle);
+    mHandle = nullptr;
 }
 
-StatusCode openMCA(const QString& detector)
+void VDM::openMCA(const QString& detector)
 {
-    if(hasOpenMCA)
-        return ERROR_OPEN;
+    if(mHasOpenMCA)
+        closeMCA();
 
     QByteArray ba = detector.toLocal8Bit();
     char* mca = const_cast<char*>(ba.data());
     //if(SadOpenDataSource(hDSC, mca, CIF_Detector, ACC_Exclusive | ACC_SysWrite | ACC_ReadWrite, TRUE, ""))
-    if(SadOpenDataSource(hDSC, mca, CIF_Detector, ACC_ReadOnly, FALSE, ""))
-        return ERROR_OPEN;
+    if(SadOpenDataSource(mHandle, mca, CIF_Detector, ACC_ReadOnly, FALSE, ""))
+        throw BadException(__FILE__, __FUNCTION__, __LINE__, "Open MCA failed");
 
-    hasOpenMCA = true;
-    return SUCCESS;
+    mHasOpenMCA = true;
 }
 
-void closeMCA()
+void VDM::closeMCA()
 {
-    if(hasOpenMCA)
+    if(mHasOpenMCA)
     {
-        SadCloseDataSource(hDSC);
-        hasOpenMCA = false;
+        SadCloseDataSource(mHandle);
+        mHasOpenMCA = false;
     }
 }
 
-StatusCode isBusy(const QString& detector, bool &status)
-{
-    // Check if mca is busy or not
-    StatusCode statusCode = SUCCESS;
-    if((statusCode = openMCA(detector)) != SUCCESS)
-        return statusCode;
+bool VDM::isBusy(const QString& detector)
+{    
+    openMCA(detector);
 
     DSQuery_T stInfo;
-    if(SadQueryDataSource(hDSC, DSQ_Status, &stInfo))
+    if(SadQueryDataSource(mHandle, DSQ_Status, &stInfo))
     {
         closeMCA();
-        return ERROR_QUERY;
+        throw QueryException(__FILE__, __FUNCTION__, __LINE__, "Query MCA status failed");
     }
 
-    status = (stInfo.stDS.fsStatus & DSS_Busy) ? true : false;
+    bool status = (stInfo.stDS.fsStatus & DSS_Busy) ? true : false;
+
     closeMCA();
-    return SUCCESS;
+    return status;
 }
 
-StatusCode maxChannels(const QString& detector, int &channels)
+int VDM::maxChannels(const QString& detector)
 {
     // Get max number of channels for mca
-    StatusCode statusCode = SUCCESS;
-    if((statusCode = openMCA(detector)) != SUCCESS)
-        return statusCode;
+    openMCA(detector);
 
     DSQuery_T stInfo;
-    if(SadQueryDataSource(hDSC, DSQ_ChansPer, &stInfo))
+    if(SadQueryDataSource(mHandle, DSQ_ChansPer, &stInfo))
     {
         closeMCA();
-        return ERROR_QUERY;
+        throw QueryException(__FILE__, __FUNCTION__, __LINE__, "Query MCA channels failed");
     }
 
-    channels = (int)stInfo.ulChannels;
+    int channels = (int)stInfo.ulChannels;
+
     closeMCA();
-    return SUCCESS;
+    return channels;
 }
 
-StatusCode hasHighVoltage(const QString& detector, bool &status)
+bool VDM::hasHighVoltage(const QString& detector)
 {
     // Get voltage status for mca
-    StatusCode statusCode = SUCCESS;
-    if((statusCode = openMCA(detector)) != SUCCESS)
-        return statusCode;
+    openMCA(detector);
 
     LONG hvstat = 0L;
-    if(SadGetParam(hDSC, CAM_L_HVPSFSTAT, 0, 0, &hvstat, sizeof(LONG)))
+    if(SadGetParam(mHandle, CAM_L_HVPSFSTAT, 0, 0, &hvstat, sizeof(LONG)))
     {
         closeMCA();
-        return ERROR_QUERY;
+        throw QueryException(__FILE__, __FUNCTION__, __LINE__, "Query MCA voltage failed");
     }
 
-    status = hvstat ? true : false;
-    closeMCA();
-    return SUCCESS;
-}
+    bool status = hvstat ? true : false;
 
-} // namespace mca
+    closeMCA();
+    return status;
+}

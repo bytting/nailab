@@ -21,6 +21,7 @@
 #include "editdetectorbeaker.h"
 #include "beaker.h"
 #include "detector.h"
+#include "mcalib.h"
 
 #define NAILAB_ENVIRONMENT_VARIABLE "NAIROOT"
 
@@ -40,6 +41,7 @@ public:
 private:
 
     Ui::MainWindow ui;    
+    VDM* vdm;
     CreateBeaker *dlgNewBeaker;
     CreateDetector *dlgNewDetector;    
     createdetectorbeaker *dlgNewDetectorBeaker;
@@ -58,7 +60,7 @@ private:
     QList<QString> detectorNames;    
     QListWidgetItem *listItemJobs, *listItemDetectors, *listItemArchive;
 
-    QFileSystemModel *modelArchive;
+    QFileSystemModel *modelArchive, *modelJobs;
 
     bool bAdminDetectorsEnabled, bAdminBeakersEnabled;
 
@@ -133,6 +135,8 @@ private slots:
     void onSampleBeakerChanged(QString beaker);
 
     void onJobClicked(bool);
+
+    void onJobClicked2(const QModelIndex &index);
 };
 
 #endif // NAILAB_H

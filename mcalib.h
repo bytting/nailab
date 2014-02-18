@@ -1,27 +1,33 @@
 #ifndef MCALIB_H
 #define MCALIB_H
 
+#include <windows.h>
 #include <QString>
 
-namespace mca
+class VDM
 {
+public:
 
-enum StatusCode {
-    SUCCESS,
-    ERROR_OPEN,
-    ERROR_QUERY
+    static VDM* instance();
+
+    void initialize();
+    void close();
+
+    bool isBusy(const QString& detector);
+    int maxChannels(const QString& detector);
+    bool hasHighVoltage(const QString& detector);
+
+private:
+
+    VDM() : mHandle(NULL), mHasOpenMCA(false) {}
+    VDM(const VDM&) {}
+    VDM& operator = (const VDM&) { return *this; }
+
+    HANDLE mHandle;
+    bool mHasOpenMCA;
+
+    void openMCA(const QString& detector);
+    void closeMCA();
 };
-
-StatusCode initializeVDM();
-void closeVDM();
-
-StatusCode openMCA(const QString& detector);
-void closeMCA();
-
-StatusCode isBusy(const QString& detector, bool &status);
-StatusCode maxChannels(const QString& detector, int &channels);
-StatusCode hasHighVoltage(const QString& detector, bool &status);
-
-} // namespace mca
 
 #endif // MCALIB_H
