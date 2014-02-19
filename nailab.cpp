@@ -53,7 +53,7 @@ bool Nailab::Initialize()
 
     onPagesChanged(ui.pages->currentIndex());
 
-    bAdminDetectorsEnabled = bAdminBeakersEnabled = true;
+    bAdminDetectorsEnabled = bAdminBeakersEnabled = bFinishedJobsSelected = true;
 
     idleTimer = new QTimer();
     connect(idleTimer, SIGNAL(timeout()), this, SLOT(onIdle()));
@@ -64,49 +64,49 @@ bool Nailab::Initialize()
 
 bool Nailab::setupEnvironment()
 {    
-    envRootDirectory.setPath(qgetenv(NAILAB_ENVIRONMENT_VARIABLE).constData());
-    if(!envRootDirectory.exists())
+    rootDirectory = QDir::toNativeSeparators(qgetenv(NAILAB_ENVIRONMENT_VARIABLE).constData());
+    if(!QDir(rootDirectory).exists())
     {
         QMessageBox::information(this, tr("Error"), tr("Environment variable not found, or invalid: ") + NAILAB_ENVIRONMENT_VARIABLE);
         return false;
     }
 
-    envConfigurationDirectory.setPath(envRootDirectory.path() + "/CONFIGURATION/");
-    envArchiveDirectory.setPath(envRootDirectory.path() + "/ARCHIVE/");
-    envTempDirectory.setPath(envRootDirectory.path() + "/TEMP/");
-    envLibraryDirectory.setPath(envRootDirectory.path() + "/LIBRARY/");
+    configurationDirectory = QDir::toNativeSeparators(rootDirectory + "/CONFIGURATION/");
+    archiveDirectory = QDir::toNativeSeparators(rootDirectory + "/ARCHIVE/");
+    tempDirectory = QDir::toNativeSeparators(rootDirectory + "/TEMP/");
+    libraryDirectory = QDir::toNativeSeparators(rootDirectory + "/LIBRARY/");
 
-    if(!envConfigurationDirectory.exists()
-        || !envArchiveDirectory.exists()
-        || !envTempDirectory.exists()
-        || !envLibraryDirectory.exists())
+    if(!QDir(configurationDirectory).exists()
+        || !QDir(archiveDirectory).exists()
+        || !QDir(tempDirectory).exists()
+        || !QDir(libraryDirectory).exists())
     {
         QMessageBox::information(this, tr("Error"), tr("One or more nailab system directories not found (CONFIGURATION, ARCHIVE, TEMP, LIBRARY)"));
         return false;
     }
 
-    envSettingsFile.setFileName(envConfigurationDirectory.path() + "/settings.xml");
+    envSettingsFile.setFileName(configurationDirectory + "settings.xml");
     if(!envSettingsFile.exists())
     {
         QMessageBox::information(this, tr("Error"), tr("File not found: ") + envSettingsFile.fileName());
         return false;
     }
 
-    envBeakerFile.setFileName(envConfigurationDirectory.path() + "/beaker.xml");
+    envBeakerFile.setFileName(configurationDirectory + "beaker.xml");
     if(!envBeakerFile.exists())
     {
         QMessageBox::information(this, tr("Error"), tr("File not found: ") + envBeakerFile.fileName());
         return false;
     }
 
-    envDetectorFile.setFileName(envConfigurationDirectory.path() + "/mca.xml");
+    envDetectorFile.setFileName(configurationDirectory + "mca.xml");
     if(!envDetectorFile.exists())
     {
         QMessageBox::information(this, tr("Error"), tr("File not found: ") + envDetectorFile.fileName());
         return false;
     }
 
-    envQuantityUnitFile.setFileName(envConfigurationDirectory.path() + "/quantity_units.xml");
+    envQuantityUnitFile.setFileName(configurationDirectory + "quantity_units.xml");
     if(!envQuantityUnitFile.exists())
     {
         QMessageBox::information(this, tr("Error"), tr("File not found: ") + envQuantityUnitFile.fileName());
@@ -174,10 +174,8 @@ bool Nailab::setupMCA()
         return false;
     }
 
-    for(int i=0; i<detectors.count(); i++)
-    {                
-        detectors[i].maxChannels = vdm->maxChannels(detectors[i].name);
-    }
+    for(int i=0; i<detectors.count(); i++)    
+        detectors[i].maxChannels = vdm->maxChannels(detectors[i].name);    
 
     return true;
 }
@@ -251,15 +249,23 @@ void Nailab::configureWidgets()
     modelArchive->setNameFilters(QStringList() << "*.RPT");
     modelArchive->setNameFilterDisables(false);
     ui.tvArchive->setModel(modelArchive);
-    ui.tvArchive->setRootIndex(modelArchive->setRootPath(envArchiveDirectory.path()));
+    ui.tvArchive->setRootIndex(modelArchive->setRootPath(archiveDirectory));
 
-    // Jobs view
-    modelJobs = new QFileSystemModel(this);
-    modelJobs->setNameFilters(QStringList() << "*.BAT");
-    modelJobs->setNameFilterDisables(false);
-    ui.lvJobs->setModel(modelJobs);
-    ui.lvJobs->setRootIndex(modelJobs->setRootPath(envTempDirectory.path()));
-    connect(ui.lvJobs, SIGNAL(clicked(QModelIndex)), this, SLOT(onJobClicked2(QModelIndex)));
+    // Running Jobs view
+    modelRunningJobs = new QFileSystemModel(this);
+    modelRunningJobs->setNameFilters(QStringList() << "*.BAT");
+    modelRunningJobs->setNameFilterDisables(false);
+    ui.lvRunningJobs->setModel(modelRunningJobs);
+    ui.lvRunningJobs->setRootIndex(modelRunningJobs->setRootPath(tempDirectory));
+    //ui.lvRunningJobs->setStyleSheet("QListView::item {background-image: url(:/Nailab/Resources/jobs64.png);}");
+
+    // Finished Jobs view
+    modelFinishedJobs = new QFileSystemModel(this);
+    modelFinishedJobs->setNameFilters(QStringList() << "*.DONE");
+    modelFinishedJobs->setNameFilterDisables(false);
+    ui.lvFinishedJobs->setModel(modelFinishedJobs);
+    ui.lvFinishedJobs->setRootIndex(modelFinishedJobs->setRootPath(tempDirectory));
+    //ui.lvFinishedJobs->setStyleSheet("QListView::item {image: url(:/Nailab/Resources/job.png);}");
 
     // Dates
     ui.dtInputSampleNoneSampleDate->setDate(QDate::currentDate());
@@ -402,7 +408,7 @@ void Nailab::storeSampleInput(SampleInput& sampleInput)
 
 bool Nailab::startJob(SampleInput& sampleInput)
 {
-    QString baseFilename = QDir::toNativeSeparators(envTempDirectory.path() + "/JOB-" + sampleInput.detector).toUpper();
+    QString baseFilename = tempDirectory + sampleInput.detector;
 
     QFile jobfile(baseFilename + ".BAT");
     if(!jobfile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
@@ -440,7 +446,7 @@ bool Nailab::startJob(SampleInput& sampleInput)
     endJobCommand(stream);    
 
     startJobCommand(stream, "movedata");    
-    addJobParamQuoted(stream, "", QDir::toNativeSeparators(detector->beakers[sampleInput.geometry]).toUpper());
+    addJobParamQuoted(stream, "", detector->beakers[sampleInput.geometry]);
     addJobParam(stream, "det:", sampleInput.detector);
     addJobParamSingle(stream, "/effcal");
     addJobParamSingle(stream, "/overwrite");
@@ -511,7 +517,7 @@ bool Nailab::startJob(SampleInput& sampleInput)
 
     startJobCommand(stream, "areacor");
     addJobParam(stream, "det:", sampleInput.detector);
-    addJobParamQuoted(stream, "/bkgnd=", QDir::toNativeSeparators(detector->backgroundSubtract).toUpper());
+    addJobParamQuoted(stream, "/bkgnd=", detector->backgroundSubtract);
     endJobCommand(stream);
 
     startJobCommand(stream, "effcor");
@@ -521,7 +527,7 @@ bool Nailab::startJob(SampleInput& sampleInput)
 
     startJobCommand(stream, "nid_intf");
     addJobParam(stream, "det:", sampleInput.detector);
-    addJobParamQuoted(stream, "/LIBRARY=", QDir::toNativeSeparators(detector->NIDLibrary).toUpper());
+    addJobParamQuoted(stream, "/LIBRARY=", detector->NIDLibrary);
     addJobParam(stream, "/CONFID=", QString::number(detector->NIDConfidenceTreshold));
     if(detector->performMDATest)
         addJobParamSingle(stream, "/MDA_TEST");
@@ -547,7 +553,7 @@ bool Nailab::startJob(SampleInput& sampleInput)
 
     startJobCommand(stream, "report");
     addJobParam(stream, "det:", sampleInput.detector);
-    addJobParamQuoted(stream, "/template=", QDir::toNativeSeparators(settings.templateName).toUpper());
+    addJobParamQuoted(stream, "/template=", settings.templateName);
     addJobParamSingle(stream, "/newfile");
     addJobParamSingle(stream, "/firstpg");
     addJobParamSingle(stream, "/newpg");
@@ -607,169 +613,12 @@ void Nailab::addJobParamQuoted(QTextStream& s, const QString& p, const QString& 
 
 bool Nailab::detectorHasJob(const Detector* det)
 {
-    QString filename = QDir::toNativeSeparators(envTempDirectory.path() + "/JOB-" + det->name + ".BAT");
+    QString filename = tempDirectory + det->name + ".BAT";
 
-    if(QFile::exists(filename.toUpper()))
+    if(QFile::exists(filename))
         return true;
 
     return false;
-}
-
-void Nailab::updateJobs()
-{
-    for(int i=0; i<ui.twJobs->rowCount(); i++)
-        ui.twJobs->removeRow(i);
-
-    QString detName = "";
-    QStringList filters;
-    filters.append("JOB-*.BAT");
-    QDir dir(envTempDirectory.path());
-    QStringList batfiles = dir.entryList(filters, QDir::Files);
-
-    ui.twJobs->setRowCount(batfiles.count());
-
-    QPushButton* btn = 0;
-    for(int i=0; i<batfiles.count(); i++)
-    {        
-        detName = batfiles[i].mid(4);
-        int idx = detName.indexOf('.');
-        detName = detName.left(idx);
-        ui.twJobs->setCellWidget(i, 0, new QLabel(detName));
-        ui.twJobs->setCellWidget(i, 1, new QLabel("Status..."));
-
-        btn = new QPushButton("Show");
-        connect(btn, SIGNAL(clicked(bool)), this, SLOT(onJobClicked(bool)));
-        ui.twJobs->setCellWidget(i, 2, btn);
-
-        btn = new QPushButton("Print");
-        connect(btn, SIGNAL(clicked(bool)), this, SLOT(onJobClicked(bool)));
-        ui.twJobs->setCellWidget(i, 3, btn);
-
-        btn = new QPushButton("Store");
-        connect(btn, SIGNAL(clicked(bool)), this, SLOT(onJobClicked(bool)));
-        ui.twJobs->setCellWidget(i, 4, btn);
-
-        btn = new QPushButton("Reject");
-        connect(btn, SIGNAL(clicked(bool)), this, SLOT(onJobClicked(bool)));
-        ui.twJobs->setCellWidget(i, 5, btn);
-    }
-
-    /*ui.twJobs->setColumnWidth(0, 220);
-    ui.twJobs->setColumnWidth(1, 60);
-    ui.twJobs->setColumnWidth(2, 60);
-    ui.twJobs->setColumnWidth(3, 60);*/
-}
-
-void Nailab::showJob(const QString& detName)
-{
-    QString reportfile = QDir::toNativeSeparators(envTempDirectory.path() + "/JOB-" + detName + ".RPT").toUpper();
-    if(QFile::exists(reportfile))
-        QProcess::startDetached("notepad.exe", QStringList() << reportfile);
-}
-
-void Nailab::printJob(const QString& detName)
-{
-    QString baseFilename = QDir::toNativeSeparators(envTempDirectory.path() + "/JOB-" + detName).toUpper();
-
-    QFile jobfile(baseFilename + ".PNT");
-    if(!jobfile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
-    {
-        QMessageBox::information(this, tr("Error"), tr("Unable to open print file"));
-        return;
-    }
-    QTextStream stream(&jobfile);
-
-    startJobCommand(stream, "report");
-    addJobParam(stream, "det:", detName);
-    addJobParamQuoted(stream, "/template=", QDir::toNativeSeparators(settings.templateName).toUpper());
-    addJobParamSingle(stream, "/newfile");
-    addJobParamSingle(stream, "/firstpg");
-    addJobParamSingle(stream, "/newpg");
-    addJobParamQuoted(stream, "/outfile=", baseFilename + ".RPT");
-    addJobParamQuoted(stream, "/section=", "");
-    addJobParam(stream, "/EM=", QString::number(settings.errorMultiplier));
-    addJobParamSingle(stream, "/PRINT");
-    endJobCommand(stream);
-
-    startJobCommand(stream, "dataplot");
-    addJobParam(stream, "det:", detName);
-    addJobParam(stream, "/scale=", "log");
-    addJobParamSingle(stream, "/enhplot");
-    endJobCommand(stream);
-
-    jobfile.close();
-
-    QtConcurrent::run(runJob, baseFilename + ".PNT");
-}
-
-void Nailab::storeJob(const QString& detName)
-{
-    Detector* det = getDetectorByName(detName);
-    if(!updateDetectorSpectrumCounter(envDetectorFile, det))
-        return; // FIXME
-    QDate date = QDate::currentDate();
-    int iyear = date.year() % 1000;        
-    QString fname = QString("%1%2%3").arg(detName).arg(iyear, 2, 10, QChar('0')).arg(det->spectrumCounter, 4, 10, QChar('0'));
-
-    QString baseFilename = QDir::toNativeSeparators(envTempDirectory.path() + "/JOB-" + detName).toUpper();
-    QString reportFilename = baseFilename + ".RPT";
-    QString batchFilename = baseFilename + ".BAT";
-    QString outFilename = baseFilename + ".OUT";
-    QString errFilename = baseFilename + ".ERR";
-    QString specFilename = baseFilename + ".CNF";
-    QString doneFilename = baseFilename + ".DONE";
-    QString printFilename = baseFilename + ".PNT";       
-
-    QString currPath = QDir::toNativeSeparators(envArchiveDirectory.path() + "/" + QString::number(date.year()) + "/" + detName + "/");
-
-    if(!QDir(QDir::toNativeSeparators(envArchiveDirectory.path() + "/" + QString::number(date.year()))).exists())
-        QDir().mkdir(QDir::toNativeSeparators(envArchiveDirectory.path() + "/" + QString::number(date.year())));
-
-    if(!QDir(currPath).exists())
-        QDir().mkdir(currPath);
-
-
-    if(QFile::exists(reportFilename))
-        QFile::rename(reportFilename, (currPath + fname + ".RPT").toUpper());
-    if(QFile::exists(batchFilename))
-        QFile::rename(batchFilename, (currPath + fname + ".BAT").toUpper());
-    if(QFile::exists(outFilename))
-        QFile::rename(outFilename, (currPath + fname + ".OUT").toUpper());
-    if(QFile::exists(errFilename))
-        QFile::rename(errFilename, (currPath + fname + ".ERR").toUpper());
-    if(QFile::exists(specFilename))
-        QFile::rename(specFilename, (currPath + fname + ".CNF").toUpper());
-    if(QFile::exists(doneFilename))
-        QFile::remove(doneFilename);
-    if(QFile::exists(printFilename))
-        QFile::remove(printFilename);
-}
-
-void Nailab::rejectJob(const QString& detName)
-{
-    QString baseFilename = QDir::toNativeSeparators(envTempDirectory.path() + "/JOB-" + detName).toUpper();
-    QString reportFilename = baseFilename + ".RPT";
-    QString batchFilename = baseFilename + ".BAT";
-    QString outFilename = baseFilename + ".OUT";
-    QString errFilename = baseFilename + ".ERR";
-    QString specFilename = baseFilename + ".CNF";
-    QString doneFilename = baseFilename + ".DONE";
-    QString printFilename = baseFilename + ".PNT";
-
-    if(QFile::exists(reportFilename))
-        QFile::remove(reportFilename);
-    if(QFile::exists(batchFilename))
-        QFile::remove(batchFilename);
-    if(QFile::exists(outFilename))
-        QFile::remove(outFilename);
-    if(QFile::exists(errFilename))
-        QFile::remove(errFilename);
-    if(QFile::exists(specFilename))
-        QFile::remove(specFilename);
-    if(QFile::exists(doneFilename))
-        QFile::remove(doneFilename);
-    if(QFile::exists(printFilename))
-        QFile::remove(printFilename);
 }
 
 void Nailab::showBeakersForDetector(Detector *detector)
@@ -813,6 +662,23 @@ void Nailab::onIdle()
         enableControlTree(ui.frameAdminBeakers, false);
         bAdminBeakersEnabled = false;
     }
+
+    if(ui.lvFinishedJobs->selectionModel()->selectedIndexes().count() > 0 && !bFinishedJobsSelected)
+    {
+        ui.btnJobShow->setEnabled(true);
+        ui.btnJobPrint->setEnabled(true);
+        ui.btnJobStore->setEnabled(true);
+        ui.btnJobReject->setEnabled(true);
+        bFinishedJobsSelected = true;
+    }
+    else if(ui.lvFinishedJobs->selectionModel()->selectedIndexes().count() <= 0 && bFinishedJobsSelected)
+    {
+        ui.btnJobShow->setEnabled(false);
+        ui.btnJobPrint->setEnabled(false);
+        ui.btnJobStore->setEnabled(false);
+        ui.btnJobReject->setEnabled(false);
+        bFinishedJobsSelected = false;
+    }
 }
 
 void Nailab::onQuit()
@@ -837,11 +703,8 @@ void Nailab::onAdmin()
 
 void Nailab::onMenuSelect(QListWidgetItem *item)
 {        
-    if(item == listItemJobs)
-    {
-        updateJobs();
-        ui.pages->setCurrentWidget(ui.pageJobs);
-    }
+    if(item == listItemJobs)    
+        ui.pages->setCurrentWidget(ui.pageJobs);    
     else if(item == listItemDetectors)
         ui.pages->setCurrentWidget(ui.pageDetectors);
     else if(item == listItemArchive)
@@ -1168,7 +1031,7 @@ void Nailab::onLvAdminDetectorsCurrentItemChanged(QListWidgetItem *current, QLis
 
 void Nailab::onBrowseBackgroundSubtract()
 {
-    QString filename = QFileDialog::getOpenFileName(this, tr("Select background file"), envLibraryDirectory.path(), tr("Background files (%1)").arg("*.cnf"));
+    QString filename = QFileDialog::getOpenFileName(this, tr("Select background file"), libraryDirectory, tr("Background files (%1)").arg("*.cnf"));
     if(QFile::exists(filename))
     {
         ui.tbAdminDetectorBackgroundSubtract->setText(filename);
@@ -1177,7 +1040,7 @@ void Nailab::onBrowseBackgroundSubtract()
 
 void Nailab::onBrowseTemplateName()
 {
-    QString filename = QFileDialog::getOpenFileName(this, tr("Select template file"), envLibraryDirectory.path(), tr("Template files (%1)").arg("*.tpl"));
+    QString filename = QFileDialog::getOpenFileName(this, tr("Select template file"), libraryDirectory, tr("Template files (%1)").arg("*.tpl"));
     if(QFile::exists(filename))
     {
         ui.tbAdminGeneralTemplateName->setText(filename);
@@ -1186,7 +1049,7 @@ void Nailab::onBrowseTemplateName()
 
 void Nailab::onBrowseNIDLibrary()
 {
-    QString filename = QFileDialog::getOpenFileName(this, tr("Select library file"), envLibraryDirectory.path(), tr("Library files (%1)").arg("*.nlb"));
+    QString filename = QFileDialog::getOpenFileName(this, tr("Select library file"), libraryDirectory, tr("Library files (%1)").arg("*.nlb"));
     if(QFile::exists(filename))
     {
         ui.tbAdminDetectorNIDLibrary->setText(filename);
@@ -1245,7 +1108,7 @@ void Nailab::onAddDetectorBeaker()
     {
         dlgNewDetectorBeaker->setDetector(detector->name);
         dlgNewDetectorBeaker->setBeakers(beakerlist);
-        dlgNewDetectorBeaker->setCalFilePath(envLibraryDirectory.path());
+        dlgNewDetectorBeaker->setCalFilePath(libraryDirectory);
         dlgNewDetectorBeaker->exec();
     }
 }
@@ -1287,7 +1150,7 @@ void Nailab::onEditDetectorBeaker()
 
     dlgEditDetectorBeaker->setDetector(detector->name);
     dlgEditDetectorBeaker->setBeaker(beakerName);
-    dlgEditDetectorBeaker->setCalFilePath(envLibraryDirectory.path());
+    dlgEditDetectorBeaker->setCalFilePath(libraryDirectory);
     dlgEditDetectorBeaker->exec();
 }
 
@@ -1297,79 +1160,135 @@ void Nailab::onSampleBeakerChanged(QString beaker)
     QString filter = detectorName + beaker + "*.cal";
     QStringList filters;
     filters.append(filter);
-    QDir dir(envLibraryDirectory.path());
+    QDir dir(libraryDirectory);
     QStringList calfiles = dir.entryList(filters, QDir::Files);
     ui.cboxInputSampleCalFiles->clear();
     for(int i=0; i<calfiles.count(); i++)
-        ui.cboxInputSampleCalFiles->addItem(QDir::cleanPath(envLibraryDirectory.path() + QDir::separator() + calfiles[i]));
+        ui.cboxInputSampleCalFiles->addItem(QDir::cleanPath(libraryDirectory + calfiles[i]));
     Detector* det = getDetectorByName(detectorName);
     ui.cboxInputSampleCalFiles->setCurrentText(det->beakers[beaker]);
 }
 
-void Nailab::onJobClicked(bool)
+void Nailab::onShowJob()
 {
-    QObject* obj = sender();
-    if(!obj)
-        return;
-
-    QString detectorName = "";
-    int row, col;
-
-    for(row=0; row<ui.twJobs->rowCount(); row++)
-    {
-        for(col=0; col<ui.twJobs->columnCount(); col++)
-        {
-            if(sender() == ui.twJobs->cellWidget(row, col))
-            {
-                QLabel *lbl = dynamic_cast<QLabel*>(ui.twJobs->cellWidget(row, 0));
-                if(!lbl)
-                    return;
-
-                detectorName = lbl->text();
-
-                if(detectorName.isEmpty())
-                    return;
-
-                switch(col)
-                {
-                case 2:
-                    showJob(detectorName);
-                    break;
-                case 3:
-                    printJob(detectorName);
-                    break;
-                case 4:
-                    storeJob(detectorName);
-                    break;
-                case 5:
-                    rejectJob(detectorName);
-                    break;
-                }
-                updateJobs();
-            }
-        }
-    }
+    QModelIndex idx = ui.lvFinishedJobs->selectionModel()->currentIndex();
+    QString doneFile = modelFinishedJobs->filePath(idx);
+    QString rptFile = tempDirectory + QFileInfo(doneFile).completeBaseName() + ".RPT";
+    if(QFile::exists(rptFile))
+        QProcess::startDetached("notepad.exe", QStringList() << rptFile);
 }
 
-void Nailab::onJobClicked2(const QModelIndex &index)
+void Nailab::onPrintJob()
 {
-    QString jobFile = modelJobs->filePath(index);
-    QString fname = QFileInfo(jobFile).absolutePath() + "/" + QFileInfo(jobFile).completeBaseName();
-    QString doneFile = QDir::toNativeSeparators(fname + ".DONE");
-    QMessageBox::information(this, tr("Error"), doneFile);
+    QModelIndex idx = ui.lvFinishedJobs->selectionModel()->currentIndex();
+    QString doneFile = modelFinishedJobs->filePath(idx);
+    QString detName = QFileInfo(doneFile).completeBaseName();
+    QString baseFilename = tempDirectory + detName;
 
-    if(QFile(doneFile).exists())
+    QFile jobfile(baseFilename + ".PNT");
+    if(!jobfile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
     {
-        ui.btnJobShow->setEnabled(true);
-        ui.btnJobPrint->setEnabled(true);
-        ui.btnJobStore->setEnabled(true);
-        ui.btnJobReject->setEnabled(true);
+        QMessageBox::information(this, tr("Error"), tr("Unable to open print file"));
+        return;
     }
-    else
-    {
-        ui.btnJobShow->setEnabled(false);
-        ui.btnJobPrint->setEnabled(false);
-        ui.btnJobStore->setEnabled(false);
-        ui.btnJobReject->setEnabled(false);
-    }
+    QTextStream stream(&jobfile);
+
+    startJobCommand(stream, "report");
+    addJobParam(stream, "det:", detName);
+    addJobParamQuoted(stream, "/template=", settings.templateName);
+    addJobParamSingle(stream, "/newfile");
+    addJobParamSingle(stream, "/firstpg");
+    addJobParamSingle(stream, "/newpg");
+    addJobParamQuoted(stream, "/outfile=", baseFilename + ".RPT"); // FIXME
+    addJobParamQuoted(stream, "/section=", "");
+    addJobParam(stream, "/EM=", QString::number(settings.errorMultiplier));
+    addJobParamSingle(stream, "/PRINT");
+    endJobCommand(stream);
+
+    startJobCommand(stream, "dataplot");
+    addJobParam(stream, "det:", detName);
+    addJobParam(stream, "/scale=", "log");
+    addJobParamSingle(stream, "/enhplot");
+    endJobCommand(stream);
+
+    jobfile.close();
+
+    QtConcurrent::run(runJob, baseFilename + ".PNT");
+}
+
+void Nailab::onStoreJob()
+{
+    QModelIndex idx = ui.lvFinishedJobs->selectionModel()->currentIndex();
+    QString doneFile = modelFinishedJobs->filePath(idx);
+    QString detName = QFileInfo(doneFile).completeBaseName();
+    QString baseFilename = tempDirectory + detName;
+
+    Detector* det = getDetectorByName(detName);
+    if(!updateDetectorSpectrumCounter(envDetectorFile, det))
+        return; // FIXME
+    QDate date = QDate::currentDate();
+    int iyear = date.year() % 1000;
+    QString fname = QString("%1%2%3").arg(detName).arg(iyear, 2, 10, QChar('0')).arg(det->spectrumCounter, 4, 10, QChar('0'));
+
+    QString reportFilename = baseFilename + ".RPT";
+    QString batchFilename = baseFilename + ".BAT";
+    QString outFilename = baseFilename + ".OUT";
+    QString errFilename = baseFilename + ".ERR";
+    QString specFilename = baseFilename + ".CNF";
+    QString doneFilename = baseFilename + ".DONE";
+    QString printFilename = baseFilename + ".PNT";
+
+    QString currPath = archiveDirectory + QString::number(date.year()) + QDir::separator() + detName + QDir::separator();
+
+    if(!QDir(archiveDirectory + QString::number(date.year())).exists())
+        QDir().mkdir(archiveDirectory + QString::number(date.year()));
+
+    if(!QDir(currPath).exists())
+        QDir().mkdir(currPath);
+
+    if(QFile::exists(reportFilename))
+        QFile::rename(reportFilename, (currPath + fname + ".RPT").toUpper());
+    if(QFile::exists(batchFilename))
+        QFile::rename(batchFilename, (currPath + fname + ".BAT").toUpper());
+    if(QFile::exists(outFilename))
+        QFile::rename(outFilename, (currPath + fname + ".OUT").toUpper());
+    if(QFile::exists(errFilename))
+        QFile::rename(errFilename, (currPath + fname + ".ERR").toUpper());
+    if(QFile::exists(specFilename))
+        QFile::rename(specFilename, (currPath + fname + ".CNF").toUpper());
+    if(QFile::exists(doneFilename))
+        QFile::remove(doneFilename);
+    if(QFile::exists(printFilename))
+        QFile::remove(printFilename);
+}
+
+void Nailab::onRejectJob()
+{
+    QModelIndex idx = ui.lvFinishedJobs->selectionModel()->currentIndex();
+    QString doneFile = modelFinishedJobs->filePath(idx);
+    QString detName = QFileInfo(doneFile).completeBaseName();
+    QString baseFilename = tempDirectory + detName;
+
+    QString reportFilename = baseFilename + ".RPT";
+    QString batchFilename = baseFilename + ".BAT";
+    QString outFilename = baseFilename + ".OUT";
+    QString errFilename = baseFilename + ".ERR";
+    QString specFilename = baseFilename + ".CNF";
+    QString doneFilename = baseFilename + ".DONE";
+    QString printFilename = baseFilename + ".PNT";
+
+    if(QFile::exists(reportFilename))
+        QFile::remove(reportFilename);
+    if(QFile::exists(batchFilename))
+        QFile::remove(batchFilename);
+    if(QFile::exists(outFilename))
+        QFile::remove(outFilename);
+    if(QFile::exists(errFilename))
+        QFile::remove(errFilename);
+    if(QFile::exists(specFilename))
+        QFile::remove(specFilename);
+    if(QFile::exists(doneFilename))
+        QFile::remove(doneFilename);
+    if(QFile::exists(printFilename))
+        QFile::remove(printFilename);
 }

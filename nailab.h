@@ -48,9 +48,8 @@ private:
     editdetectorbeaker *dlgEditDetectorBeaker;
 
     QTimer *idleTimer;
-    QString username;
-    QDir envRootDirectory;
-    QDir envConfigurationDirectory, envArchiveDirectory, envTempDirectory, envLibraryDirectory;
+    QString username;    
+    QString rootDirectory, configurationDirectory, archiveDirectory, tempDirectory, libraryDirectory;
     QFile envSettingsFile, envBeakerFile, envDetectorFile, envQuantityUnitFile;
 
     QMap<QWidget*, QActionGroup*> toolGroups;
@@ -60,9 +59,9 @@ private:
     QList<QString> detectorNames;    
     QListWidgetItem *listItemJobs, *listItemDetectors, *listItemArchive;
 
-    QFileSystemModel *modelArchive, *modelJobs;
+    QFileSystemModel *modelArchive, *modelRunningJobs, *modelFinishedJobs;
 
-    bool bAdminDetectorsEnabled, bAdminBeakersEnabled;
+    bool bAdminDetectorsEnabled, bAdminBeakersEnabled, bFinishedJobsSelected;
 
     bool setupEnvironment();
     void setupDialogs();
@@ -76,7 +75,6 @@ private:
     void disableListWidgetItem(QListWidgetItem *item);
     Detector* getDetectorByName(const QString& name);
 
-    void updateJobs();
     void showBeakersForDetector(Detector *detector);
 
     bool validateSampleInput();
@@ -88,11 +86,6 @@ private:
     void addJobParamSingle(QTextStream& s, const QString& v);
     void addJobParamQuoted(QTextStream& s, const QString& p, const QString& v);
     bool detectorHasJob(const Detector* det);
-
-    void showJob(const QString& detName);
-    void printJob(const QString& detName);
-    void storeJob(const QString& detName);
-    void rejectJob(const QString& detName);
 
 private slots:
 
@@ -132,11 +125,12 @@ private slots:
     void onAddDetectorBeaker();    
     void onDeleteDetectorBeaker();
     void onEditDetectorBeaker();
-    void onSampleBeakerChanged(QString beaker);
+    void onSampleBeakerChanged(QString beaker);    
 
-    void onJobClicked(bool);
-
-    void onJobClicked2(const QModelIndex &index);
+    void onShowJob();
+    void onPrintJob();
+    void onStoreJob();
+    void onRejectJob();
 };
 
 #endif // NAILAB_H
