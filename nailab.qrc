@@ -8,6 +8,5 @@
         <file>Resources/beaker16.png</file>
         <file>Resources/detector16.png</file>
         <file>Resources/detectors64.png</file>
-        <file>Resources/job.png</file>
     </qresource>
 </RCC>

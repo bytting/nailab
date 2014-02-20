@@ -47,11 +47,11 @@ void createdetectorbeaker::selectFileClick()
     QString filename = QFileDialog::getOpenFileName(this, tr("Select cal file"), mPath, tr("CAL files (%1)").arg(mFilter));
     if(QFile::exists(filename))
     {
-        ui->txtFilename->setText(filename);
+        ui->txtFilename->setText(QDir::toNativeSeparators(filename));
     }
 }
 
 void createdetectorbeaker::beakerSelected(QString beaker)
 {
-    mFilter = mDetector + beaker + "*.cal";
+    mFilter = mDetector + "*.cal";
 }

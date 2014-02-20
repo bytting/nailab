@@ -42,10 +42,10 @@ QString editdetectorbeaker::calfile() const
 
 void editdetectorbeaker::selectFileClick()
 {
-    QString filter = mDetector + beaker() + "*.cal";
+    QString filter = mDetector + "*.cal";
     QString filename = QFileDialog::getOpenFileName(this, tr("Select cal file"), mPath, tr("CAL files (%1)").arg(filter));
     if(QFile::exists(filename))
     {
-        ui->txtFilename->setText(filename);
+        ui->txtFilename->setText(QDir::toNativeSeparators(filename));
     }
 }

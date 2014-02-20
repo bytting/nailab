@@ -265,7 +265,7 @@ void Nailab::configureWidgets()
     modelFinishedJobs->setNameFilterDisables(false);
     ui.lvFinishedJobs->setModel(modelFinishedJobs);
     ui.lvFinishedJobs->setRootIndex(modelFinishedJobs->setRootPath(tempDirectory));
-    //ui.lvFinishedJobs->setStyleSheet("QListView::item {image: url(:/Nailab/Resources/job.png);}");
+    //ui.lvFinishedJobs->setStyleSheet("QListView::item {image: url(:/Nailab/Resources/jobs64.png);}");
 
     // Dates
     ui.dtInputSampleNoneSampleDate->setDate(QDate::currentDate());
@@ -328,19 +328,12 @@ void Nailab::updateDetectorViews()
                 found = true;
         }
 
-        if(!detector.inUse)
-        {
-            item->setHidden(true);
-        }
-        else if(!found)
-        {
+        if(!detector.inUse)        
+            item->setHidden(true);        
+        else if(!found)        
+            disableListWidgetItem(item);        
+        else if(vdm->isBusy(detector.name))
             disableListWidgetItem(item);
-        }
-        else
-        {
-            if(vdm->isBusy(detector.name))
-                disableListWidgetItem(item);
-        }
     }
     connect(ui.lwDetectors, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onDetectorSelect(QListWidgetItem*)));
 }
@@ -580,7 +573,6 @@ bool Nailab::startJob(SampleInput& sampleInput)
 
     jobfile.close();    
 
-    //QProcess::startDetached(baseFilename + ".BAT >" + baseFilename + ".OUT " + "2>" + baseFilename + ".ERR");
     QtConcurrent::run(runJob, baseFilename + ".BAT >" + baseFilename + ".OUT " + "2>" + baseFilename + ".ERR");    
 
     return true;
@@ -889,7 +881,7 @@ void Nailab::onNewDetectorBeakerAccepted()
         return;
 
     Detector* d = getDetectorByName(ui.lvAdminDetectors->selectedItems()[0]->text());
-    d->beakers[beaker] = QDir::cleanPath(calfile);
+    d->beakers[beaker] = calfile;
     writeDetectorXml(envDetectorFile, detectors);
     showBeakersForDetector(d);
 }
@@ -905,7 +897,7 @@ void Nailab::onEditDetectorBeakerAccepted()
         return;
 
     Detector* d = getDetectorByName(ui.lvAdminDetectors->selectedItems()[0]->text());
-    d->beakers[beaker] = QDir::cleanPath(calfile);
+    d->beakers[beaker] = calfile;
     writeDetectorXml(envDetectorFile, detectors);
     showBeakersForDetector(d);
 }
@@ -1034,7 +1026,7 @@ void Nailab::onBrowseBackgroundSubtract()
     QString filename = QFileDialog::getOpenFileName(this, tr("Select background file"), libraryDirectory, tr("Background files (%1)").arg("*.cnf"));
     if(QFile::exists(filename))
     {
-        ui.tbAdminDetectorBackgroundSubtract->setText(filename);
+        ui.tbAdminDetectorBackgroundSubtract->setText(QDir::toNativeSeparators(filename));
     }
 }
 
@@ -1043,7 +1035,7 @@ void Nailab::onBrowseTemplateName()
     QString filename = QFileDialog::getOpenFileName(this, tr("Select template file"), libraryDirectory, tr("Template files (%1)").arg("*.tpl"));
     if(QFile::exists(filename))
     {
-        ui.tbAdminGeneralTemplateName->setText(filename);
+        ui.tbAdminGeneralTemplateName->setText(QDir::toNativeSeparators(filename));
     }
 }
 
@@ -1052,26 +1044,26 @@ void Nailab::onBrowseNIDLibrary()
     QString filename = QFileDialog::getOpenFileName(this, tr("Select library file"), libraryDirectory, tr("Library files (%1)").arg("*.nlb"));
     if(QFile::exists(filename))
     {
-        ui.tbAdminDetectorNIDLibrary->setText(filename);
+        ui.tbAdminDetectorNIDLibrary->setText(QDir::toNativeSeparators(filename));
     }
 }
 
 void Nailab::onBrowseGenieFolder()
 {
     QString dirname = QFileDialog::getExistingDirectory(this, tr("Select Genie folder"));
-    ui.tbAdminGeneralGenieFolder->setText(dirname);
+    ui.tbAdminGeneralGenieFolder->setText(QDir::toNativeSeparators(dirname + "/"));
 }
 
 void Nailab::onBrowseNAIImport()
 {
     QString dirname = QFileDialog::getExistingDirectory(this, tr("Select NAI import folder"));
-    ui.tbAdminGeneralNAIImport->setText(dirname);
+    ui.tbAdminGeneralNAIImport->setText(QDir::toNativeSeparators(dirname + "/"));
 }
 
 void Nailab::onBrowseRPTExport()
 {
     QString dirname = QFileDialog::getExistingDirectory(this, tr("Select RPT export folder"));
-    ui.tbAdminGeneralRPTExport->setText(dirname);
+    ui.tbAdminGeneralRPTExport->setText(QDir::toNativeSeparators(dirname + "/"));
 }
 
 void Nailab::onInputSampleAccepted()
@@ -1164,7 +1156,7 @@ void Nailab::onSampleBeakerChanged(QString beaker)
     QStringList calfiles = dir.entryList(filters, QDir::Files);
     ui.cboxInputSampleCalFiles->clear();
     for(int i=0; i<calfiles.count(); i++)
-        ui.cboxInputSampleCalFiles->addItem(QDir::cleanPath(libraryDirectory + calfiles[i]));
+        ui.cboxInputSampleCalFiles->addItem(libraryDirectory + calfiles[i]);
     Detector* det = getDetectorByName(detectorName);
     ui.cboxInputSampleCalFiles->setCurrentText(det->beakers[beaker]);
 }
