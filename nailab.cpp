@@ -28,7 +28,7 @@ Nailab::~Nailab()
 }
 
 bool Nailab::Initialize()
-{	    
+{	            
     if(!setupEnvironment())
         return false;
 
@@ -163,16 +163,8 @@ bool Nailab::setupMCA()
         dlgNewDetector->exec();
     }
 
-    try
-    {
-        vdm = VDM::instance();
-        vdm->initialize();
-    }
-    catch(BaseException& ex)
-    {
-        QMessageBox::information(this, tr("Error"), ex.what());
-        return false;
-    }
+    vdm = VDM::instance();
+    vdm->initialize();
 
     for(int i=0; i<detectors.count(); i++)    
         detectors[i].maxChannels = vdm->maxChannels(detectors[i].name);    

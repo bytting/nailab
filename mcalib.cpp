@@ -29,7 +29,7 @@ void VDM::initialize()
 
     // Create connection to VDM server
     if(iUtlCreateFileDSC2(&mHandle, 0, 0))
-        throw BadException(__FILE__, __FUNCTION__, __LINE__, "Connection to VDM server failed");
+        throw BadException(EXCEPTION_ARGS, "Connection to VDM server failed");
 }
 
 void VDM::close()
@@ -48,7 +48,7 @@ void VDM::openMCA(const QString& detector)
     char* mca = const_cast<char*>(ba.data());
     //if(SadOpenDataSource(hDSC, mca, CIF_Detector, ACC_Exclusive | ACC_SysWrite | ACC_ReadWrite, TRUE, ""))
     if(SadOpenDataSource(mHandle, mca, CIF_Detector, ACC_ReadOnly, FALSE, ""))
-        throw BadException(__FILE__, __FUNCTION__, __LINE__, "Open MCA failed");
+        throw BadException(EXCEPTION_ARGS, "Open MCA failed");
 
     mHasOpenMCA = true;
 }
@@ -70,7 +70,7 @@ bool VDM::isBusy(const QString& detector)
     if(SadQueryDataSource(mHandle, DSQ_Status, &stInfo))
     {
         closeMCA();
-        throw QueryException(__FILE__, __FUNCTION__, __LINE__, "Query MCA status failed");
+        throw QueryException(EXCEPTION_ARGS, "Query MCA status failed");
     }
 
     bool status = (stInfo.stDS.fsStatus & DSS_Busy) ? true : false;
@@ -88,7 +88,7 @@ int VDM::maxChannels(const QString& detector)
     if(SadQueryDataSource(mHandle, DSQ_ChansPer, &stInfo))
     {
         closeMCA();
-        throw QueryException(__FILE__, __FUNCTION__, __LINE__, "Query MCA channels failed");
+        throw QueryException(EXCEPTION_ARGS, "Query MCA channels failed");
     }
 
     int channels = (int)stInfo.ulChannels;
@@ -106,7 +106,7 @@ bool VDM::hasHighVoltage(const QString& detector)
     if(SadGetParam(mHandle, CAM_L_HVPSFSTAT, 0, 0, &hvstat, sizeof(LONG)))
     {
         closeMCA();
-        throw QueryException(__FILE__, __FUNCTION__, __LINE__, "Query MCA voltage failed");
+        throw QueryException(EXCEPTION_ARGS, "Query MCA voltage failed");
     }
 
     bool status = hvstat ? true : false;

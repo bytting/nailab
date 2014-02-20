@@ -1,8 +1,9 @@
-
 #ifndef EXCEPTIONS_H
 #define EXCEPTIONS_H
 
 #include <exception>
+
+#define EXCEPTION_ARGS __FILE__, __FUNCTION__, __LINE__
 
 class BaseException : public std::exception
 {

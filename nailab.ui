@@ -46,7 +46,7 @@
     <item>
      <widget class="QStackedWidget" name="pages">
       <property name="currentIndex">
-       <number>4</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="pageMenu">
        <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -671,7 +671,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QTreeView" name="tvArchive"/>
+         <widget class="QTreeView" name="tvArchive">
+          <attribute name="headerDefaultSectionSize">
+           <number>210</number>
+          </attribute>
+          <attribute name="headerMinimumSectionSize">
+           <number>50</number>
+          </attribute>
+         </widget>
         </item>
        </layout>
       </widget>
